@@ -10,4 +10,5 @@ bool HookGetMouseButton(int button);
 
 bool InstallUnityInputHooks();
 
+bool InitializeImGui();
 void RenderImGui();

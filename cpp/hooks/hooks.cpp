@@ -29,8 +29,48 @@ static EGLBoolean HookEglSwapBuffers(
         EGLSurface surface
 )
 {
+    EGLint width = 0;
+    EGLint height = 0;
+
+    eglQuerySurface(
+            display,
+            surface,
+            EGL_WIDTH,
+            &width
+    );
+
+    eglQuerySurface(
+            display,
+            surface,
+            EGL_HEIGHT,
+            &height
+    );
+
+    if (!g_ImGuiReady.load())
+    {
+        if (width > 0 && height > 0)
+        {
+            InitializeImGui();
+
+            if (g_ImGuiReady.load())
+            {
+                ImGui::GetIO().DisplaySize =
+                        ImVec2(
+                                static_cast<float>(width),
+                                static_cast<float>(height)
+                        );
+            }
+        }
+    }
+
     if (g_ImGuiReady.load())
     {
+        ImGui::GetIO().DisplaySize =
+                ImVec2(
+                        static_cast<float>(width),
+                        static_cast<float>(height)
+                );
+
         ImGui_ImplOpenGL3_NewFrame();
 
         ImGui::NewFrame();
