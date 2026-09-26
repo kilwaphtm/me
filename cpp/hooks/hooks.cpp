@@ -502,13 +502,117 @@ static void* InputThread(void*)
             sleep(1);
             continue;
         }
-
         if (!FindUnityInputMethods())
         {
             LOGI("[INPUT] Unity Input not ready - retry");
             sleep(1);
             continue;
         }
+
+        // =====================================================
+        // TEST METHOD METADATA
+        // =====================================================
+
+        const MethodInfo* testMethod =
+                FindMethod(
+                        "SlotMachineManager",
+                        "GetSpinResultSymbolsAnalyticFormat",
+                        -1
+                );
+
+        if (testMethod)
+        {
+            LOGI("[TEST] Method found");
+
+            if (g_il2cpp_method_get_param_count)
+            {
+                uint32_t paramCount =
+                        g_il2cpp_method_get_param_count(
+                                testMethod
+                        );
+
+                LOGI(
+                        "[TEST] Parameter count = %u",
+                        paramCount
+                );
+
+                for (uint32_t i = 0; i < paramCount; i++)
+                {
+                    const char* paramName = nullptr;
+                    const char* paramTypeName = nullptr;
+
+                    if (g_il2cpp_method_get_param_name)
+                    {
+                        paramName =
+                                g_il2cpp_method_get_param_name(
+                                        testMethod,
+                                        i
+                                );
+                    }
+
+                    if (
+                            g_il2cpp_method_get_param &&
+                            g_il2cpp_type_get_name
+                            )
+                    {
+                        const Il2CppType* paramType =
+                                g_il2cpp_method_get_param(
+                                        testMethod,
+                                        i
+                                );
+
+                        if (paramType)
+                        {
+                            paramTypeName =
+                                    g_il2cpp_type_get_name(
+                                            paramType
+                                    );
+                        }
+                    }
+
+                    LOGI(
+                            "[TEST] Param[%u] name=%s type=%s",
+                            i,
+                            paramName ? paramName : "<null>",
+                            paramTypeName ? paramTypeName : "<null>"
+                    );
+                }
+            }
+
+            if (
+                    g_il2cpp_method_get_return_type &&
+                    g_il2cpp_type_get_name
+                    )
+            {
+                const Il2CppType* returnType =
+                        g_il2cpp_method_get_return_type(
+                                testMethod
+                        );
+
+                if (returnType)
+                {
+                    const char* returnTypeName =
+                            g_il2cpp_type_get_name(
+                                    returnType
+                            );
+
+                    LOGI(
+                            "[TEST] Return type = %s",
+                            returnTypeName
+                            ? returnTypeName
+                            : "<null>"
+                    );
+                }
+            }
+        }
+        else
+        {
+            LOGI("[TEST] test.TEST not found");
+        }
+
+
+
+
 
         if (InstallUnityInputHooks())
         {
