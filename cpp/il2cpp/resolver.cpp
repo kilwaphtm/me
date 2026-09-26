@@ -12,6 +12,11 @@ const MethodInfo* g_GetTouchMethod = nullptr;
 const MethodInfo* g_GetTouchCountMethod = nullptr;
 const MethodInfo* g_GetMouseButtonMethod = nullptr;
 
+GetTouchCountFn g_OriginalGetTouchCount = nullptr;
+GetMouseButtonFn g_OriginalGetMouseButton = nullptr;
+
+void* g_GetTouchCountStub = nullptr;
+void* g_GetMouseButtonStub = nullptr;
 // =========================================================
 // STRING MATCH
 // =========================================================
@@ -308,6 +313,69 @@ bool FindUnityInputMethods()
     LOGI(
             "[INPUT] ALL Unity Input methods FOUND"
     );
+
+    return true;
+}
+
+// =========================================================
+// GET UNITY TOUCH
+// =========================================================
+
+bool GetUnityTouch(
+        int index,
+        UnityTouch& output)
+{
+    if (
+            !g_GetTouchMethod ||
+            !g_il2cpp_runtime_invoke ||
+            !g_il2cpp_object_unbox
+            )
+    {
+        return false;
+    }
+
+
+    void* args[1];
+
+    args[0] = &index;
+
+
+    Il2CppObject* exception = nullptr;
+
+
+    Il2CppObject* result =
+            g_il2cpp_runtime_invoke(
+                    g_GetTouchMethod,
+                    nullptr,
+                    args,
+                    &exception
+            );
+
+
+    if (exception)
+        return false;
+
+
+    if (!result)
+        return false;
+
+
+    void* unboxed =
+            g_il2cpp_object_unbox(
+                    result
+            );
+
+
+    if (!unboxed)
+        return false;
+
+
+    memcpy(
+            &output,
+            unboxed,
+            sizeof(UnityTouch)
+    );
+
 
     return true;
 }
