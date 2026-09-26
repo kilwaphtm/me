@@ -393,7 +393,7 @@ const MethodInfo* FindMethod(
     if (!method)
     {
         LOGI(
-                "[RESOLVER] METHOD NOT FOUND: %s.%s(%d)",
+                "[RESOLVER] METHOD NOT FOUND: %s.%s)",
                 className,
                 methodName
 
@@ -403,13 +403,77 @@ const MethodInfo* FindMethod(
     }
 
     LOGI(
-            "[RESOLVER] METHOD FOUND: %s.%s(%d)",
+            "[RESOLVER] METHOD FOUND: %s.%s)",
             className,
             methodName
 
     );
 
     return method;
+}
+// =========================================================
+bool GetMethodInfoData(
+        const MethodInfo* method,
+        MethodInfoData& output)
+{
+    if (!method)
+        return false;
+
+    if (!g_il2cpp_method_get_param_count ||
+        !g_il2cpp_method_get_return_type ||
+        !g_il2cpp_method_is_generic ||
+        !g_il2cpp_method_is_inflated ||
+        !g_il2cpp_method_is_instance)
+    {
+        LOGI(
+                "[RESOLVER] Method metadata API not ready"
+        );
+
+        return false;
+    }
+
+    output.method = method;
+
+    output.address =
+            method->methodPointer;
+
+    output.parameterCount =
+            g_il2cpp_method_get_param_count(
+                    method
+            );
+    output.parameterTypes.clear();
+    for (uint32_t i = 0; i < output.parameterCount; i++)
+    {
+        const Il2CppType* paramType =
+                g_il2cpp_method_get_param(
+                        method,
+                        i
+                );
+
+        output.parameterTypes.push_back(paramType);
+    }
+
+    output.returnType =
+            g_il2cpp_method_get_return_type(
+                    method
+            );
+
+    output.isGeneric =
+            g_il2cpp_method_is_generic(
+                    method
+            );
+
+    output.isInflated =
+            g_il2cpp_method_is_inflated(
+                    method
+            );
+
+    output.isInstance =
+            g_il2cpp_method_is_instance(
+                    method
+            );
+
+    return true;
 }
 // =========================================================
 // FIND UNITY INPUT IMAGE

@@ -2,6 +2,7 @@
 
 #include "il2cpp.h"
 #include <cstdint>
+#include <vector>
 
 Il2CppImage* FindImage(
         const char* imageName
@@ -23,6 +24,25 @@ const MethodInfo* FindMethod(
         const char* methodName
 );
 
+
+struct MethodInfoData
+{
+    const MethodInfo* method;
+    void* address;
+
+    uint32_t parameterCount;
+    std::vector<const Il2CppType*> parameterTypes;
+    std::vector<const char*> parameterNames;
+    const Il2CppType* returnType;
+
+    bool isGeneric;
+    bool isInflated;
+    bool isInstance;
+};
+bool GetMethodInfoData(
+        const MethodInfo* method,
+        MethodInfoData& output
+);
 
 extern Il2CppImage* g_InputImage;
 extern Il2CppClass* g_InputClass;
