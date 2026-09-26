@@ -18,53 +18,36 @@
 // =========================================================
 // LOG
 // =========================================================
-
 #define LOG_TAG "MY_CUSTOM_SO"
-
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO,  LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
-
-
 // =========================================================
 // EMBEDDED ICON
 // =========================================================
-
 extern const unsigned char g_icon_png[];
 extern const unsigned int g_icon_png_size;
-
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-
 // =========================================================
 // GLOBAL STATE
 // =========================================================
-
-static std::atomic<bool> g_ShadowHookReady{false};
-
-static std::atomic<bool> g_ImGuiReady{false};
-
-static std::atomic<bool> g_InputHooksInstalled{false};
-
+std::atomic<bool> g_ShadowHookReady{false};
+std::atomic<bool> g_ImGuiReady{false};
+std::atomic<bool> g_InputHooksInstalled{false};
 static int g_ScreenWidth = 0;
 static int g_ScreenHeight = 0;
-
-
 // =========================================================
 // MENU STATE
 // =========================================================
-
 namespace MenuState
 {
     static bool open = true;
 
     static int currentPage = 0;
 }
-
-
 // =========================================================
 // UI SETTINGS
 // =========================================================
-
 namespace UI
 {
     // --------------------------------------------------------
@@ -169,23 +152,15 @@ namespace UI
                     1.00f
             );
 }
-
-
 // =========================================================
 // ICON
 // =========================================================
-
 static GLuint g_IconTexture = 0;
-
 static int g_IconWidth = 0;
-
 static int g_IconHeight = 0;
-
-
 // =========================================================
 // LOAD EMBEDDED ICON
 // =========================================================
-
 static bool LoadEmbeddedIcon()
 {
     if (g_IconTexture != 0)
@@ -285,12 +260,9 @@ static bool LoadEmbeddedIcon()
 
     return true;
 }
-
-
 // =========================================================
 // UI STYLE
 // =========================================================
-
 static void ApplyUIStyle(float scale)
 {
     ImGuiStyle& style = ImGui::GetStyle();
@@ -428,14 +400,11 @@ static void ApplyUIStyle(float scale)
                     1.0f
             );
 }
-
-
 // =========================================================
 // UI COMPONENTS
 //
 // Add new reusable UI components here.
 // =========================================================
-
 namespace Components
 {
     // --------------------------------------------------------
@@ -581,8 +550,6 @@ namespace Components
         ImGui::Spacing();
     }
 }
-
-
 // =========================================================
 // PAGE SYSTEM
 //
@@ -592,19 +559,15 @@ namespace Components
 // 2. Add it to pages[]
 //
 // =========================================================
-
 struct Page
 {
     const char* name;
 
     void (*draw)(float scale);
 };
-
-
 // =========================================================
 // EMPTY PAGES
 // =========================================================
-
 static void DrawHome(float scale)
 {
     (void) scale;
@@ -617,8 +580,6 @@ static void DrawHome(float scale)
      * Add components here later.
      */
 }
-
-
 static void DrawFeatures(float scale)
 {
     (void) scale;
@@ -631,8 +592,6 @@ static void DrawFeatures(float scale)
      * Add components here later.
      */
 }
-
-
 static void DrawSettings(float scale)
 {
     (void) scale;
@@ -645,12 +604,9 @@ static void DrawSettings(float scale)
      * Add components here later.
      */
 }
-
-
 // =========================================================
 // PAGE LIST
 // =========================================================
-
 static Page pages[] =
         {
                 {
@@ -668,16 +624,11 @@ static Page pages[] =
                         DrawSettings
                 }
         };
-
-
 static constexpr int pageCount =
         sizeof(pages) / sizeof(pages[0]);
-
-
 // =========================================================
 // HEADER
 // =========================================================
-
 static void DrawHeader(float scale)
 {
     ImGui::TextColored(
@@ -708,12 +659,9 @@ static void DrawHeader(float scale)
 
     ImGui::Spacing();
 }
-
-
 // =========================================================
 // TABS
 // =========================================================
-
 static void DrawTabs(float scale)
 {
     const float spacing =
@@ -762,12 +710,9 @@ static void DrawTabs(float scale)
 
     ImGui::Spacing();
 }
-
-
 // =========================================================
 // MENU CONTENT
 // =========================================================
-
 static void DrawMenuContent(float scale)
 {
     DrawHeader(scale);
@@ -789,8 +734,6 @@ static void DrawMenuContent(float scale)
         ].draw(scale);
     }
 }
-
-
 // =========================================================
 // FLOATING BUTTON
 //
@@ -798,7 +741,6 @@ static void DrawMenuContent(float scale)
 // Can be dragged.
 // Clicking opens the menu.
 // =========================================================
-
 static void DrawFloatingButton(
         float screenW,
         float screenH,
@@ -1057,12 +999,9 @@ static void DrawFloatingButton(
 
     ImGui::End();
 }
-
-
 // =========================================================
 // MENU WINDOW
 // =========================================================
-
 static void DrawMainMenu(
         float screenW,
         float screenH,
@@ -1160,12 +1099,9 @@ static void DrawMainMenu(
 
     ImGui::End();
 }
-
-
 // =========================================================
 // DRAW MENU
 // =========================================================
-
 static void DrawMenu()
 {
     if (!g_ImGuiReady.load())
@@ -1235,395 +1171,9 @@ static void DrawMenu()
         );
     }
 }
-
-// =========================================ٍٍٍٍٍٍٍٍٍٍ================
-// UPDATE IMGUI TOUCH
-// =========================================================
-
-static void UpdateImGuiTouch()
-{
-    if (!g_ImGuiReady.load())
-        return;
-
-
-    if (!g_OriginalGetTouchCount)
-        return;
-
-
-    ImGuiIO& io =
-            ImGui::GetIO();
-
-
-    const int count =
-            g_OriginalGetTouchCount();
-
-
-    if (count <= 0)
-        return;
-
-
-    UnityTouch touch{};
-
-
-    if (!GetUnityTouch(
-            0,
-            touch
-    ))
-    {
-        return;
-    }
-
-
-    io.AddMouseSourceEvent(
-            ImGuiMouseSource_TouchScreen
-    );
-
-
-    float x =
-            touch.m_Position.x;
-
-
-    float y =
-            io.DisplaySize.y -
-            touch.m_Position.y;
-
-
-    switch (touch.m_Phase)
-    {
-        case UnityTouchPhase::Began:
-
-            io.AddMousePosEvent(
-                    x,
-                    y
-            );
-
-            io.AddMouseButtonEvent(
-                    0,
-                    true
-            );
-
-            break;
-
-
-        case UnityTouchPhase::Moved:
-
-        case UnityTouchPhase::Stationary:
-
-            io.AddMousePosEvent(
-                    x,
-                    y
-            );
-
-            break;
-
-
-        case UnityTouchPhase::Ended:
-
-        case UnityTouchPhase::Canceled:
-
-            io.AddMousePosEvent(
-                    x,
-                    y
-            );
-
-            io.AddMouseButtonEvent(
-                    0,
-                    false
-            );
-
-            io.AddMousePosEvent(
-                    -1,
-                    -1
-            );
-
-            break;
-    }
-}
-
-
-// =========================================================
-// get_touchCount HOOK
-// =========================================================
-
-static int HookGetTouchCount()
-{
-    if (!g_OriginalGetTouchCount)
-        return 0;
-
-
-    const int count =
-            g_OriginalGetTouchCount();
-
-
-    if (g_ImGuiReady.load())
-    {
-        UpdateImGuiTouch();
-
-
-        ImGuiIO& io =
-                ImGui::GetIO();
-
-
-        if (io.WantCaptureMouse)
-            return 0;
-    }
-
-
-    return count;
-}
-
-
-// =========================================================
-// GetMouseButton HOOK
-// =========================================================
-
-static bool HookGetMouseButton(
-        int button)
-{
-    if (!g_OriginalGetMouseButton)
-        return false;
-
-
-    const bool result =
-            g_OriginalGetMouseButton(
-                    button
-            );
-
-
-    if (!g_ImGuiReady.load())
-        return result;
-
-
-    ImGuiIO& io =
-            ImGui::GetIO();
-
-
-    if (io.WantCaptureMouse)
-        return false;
-
-
-    return result;
-}
-
-
-// =========================================================
-// INSTALL UNITY INPUT HOOKS
-// =========================================================
-
-static bool InstallUnityInputHooks()
-{
-    if (g_InputHooksInstalled.load())
-        return true;
-
-
-    if (
-            !g_GetTouchCountMethod ||
-            !g_GetMouseButtonMethod
-            )
-    {
-        return false;
-    }
-
-
-    void* touchCountAddress =
-            g_GetTouchCountMethod->methodPointer;
-
-
-    void* mouseButtonAddress =
-            g_GetMouseButtonMethod->methodPointer;
-
-
-    if (!touchCountAddress)
-    {
-        LOGE(
-                "[INPUT] get_touchCount methodPointer NULL"
-        );
-
-        return false;
-    }
-
-
-    if (!mouseButtonAddress)
-    {
-        LOGE(
-                "[INPUT] GetMouseButton methodPointer NULL"
-        );
-
-        return false;
-    }
-
-
-    LOGI(
-            "[INPUT] get_touchCount address = %p",
-            touchCountAddress
-    );
-
-
-    LOGI(
-            "[INPUT] GetMouseButton address = %p",
-            mouseButtonAddress
-    );
-
-
-    // -----------------------------------------------------
-    // get_touchCount
-    // -----------------------------------------------------
-
-    g_GetTouchCountStub =
-            shadowhook_hook_func_addr(
-                    touchCountAddress,
-
-                    reinterpret_cast<void*>(
-                            HookGetTouchCount
-                    ),
-
-                    reinterpret_cast<void**>(
-                            &g_OriginalGetTouchCount
-                    )
-            );
-
-
-    if (
-            !g_GetTouchCountStub ||
-            !g_OriginalGetTouchCount
-            )
-    {
-        LOGE(
-                "[INPUT] get_touchCount hook FAILED"
-        );
-
-
-        g_GetTouchCountStub = nullptr;
-
-        g_OriginalGetTouchCount = nullptr;
-
-
-        return false;
-    }
-
-
-    // -----------------------------------------------------
-    // GetMouseButton
-    // -----------------------------------------------------
-
-    g_GetMouseButtonStub =
-            shadowhook_hook_func_addr(
-                    mouseButtonAddress,
-
-                    reinterpret_cast<void*>(
-                            HookGetMouseButton
-                    ),
-
-                    reinterpret_cast<void**>(
-                            &g_OriginalGetMouseButton
-                    )
-            );
-
-
-    if (
-            !g_GetMouseButtonStub ||
-            !g_OriginalGetMouseButton
-            )
-    {
-        LOGE(
-                "[INPUT] GetMouseButton hook FAILED"
-        );
-
-
-        g_GetMouseButtonStub = nullptr;
-
-        g_OriginalGetMouseButton = nullptr;
-    }
-
-
-    g_InputHooksInstalled.store(true);
-
-
-    LOGI(
-            "[INPUT] Unity Input hooks INSTALLED"
-    );
-
-
-    return true;
-}
-
-
-// =========================================================
-// INPUT THREAD
-// =========================================================
-
-static void* InputThread(void*)
-{
-    LOGI(
-            "[INPUT] Input thread started"
-    );
-
-
-    while (
-            !g_InputHooksInstalled.load()
-            )
-    {
-        if (!g_ShadowHookReady.load())
-        {
-            sleep(1);
-            continue;
-        }
-
-
-        if (!LoadIl2CppAPI())
-        {
-            LOGI(
-                    "[INPUT] Waiting for IL2CPP..."
-            );
-
-            sleep(1);
-            continue;
-        }
-
-
-        if (!FindUnityInputMethods())
-        {
-            LOGI(
-                    "[INPUT] Unity Input not ready - retry"
-            );
-
-            sleep(1);
-            continue;
-        }
-
-
-        if (InstallUnityInputHooks())
-        {
-            LOGI(
-                    "[INPUT] Input initialization COMPLETE"
-            );
-
-            break;
-        }
-
-
-        LOGI(
-                "[INPUT] Hook installation failed - retry"
-        );
-
-
-        sleep(1);
-    }
-
-
-    LOGI(
-            "[INPUT] Input thread finished"
-    );
-
-
-    return nullptr;
-}
-
-
 // =========================================================
 // CONSTRUCTOR
 // =========================================================
-
 __attribute__((constructor))
 static void Constructor()
 {

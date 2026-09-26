@@ -55,6 +55,7 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         native-lib.cpp
         il2cpp/il2cpp.cpp
         il2cpp/resolver.cpp
+        hooks/hooks.cpp
 
         ${GENERATED_ICON_CPP}
 
