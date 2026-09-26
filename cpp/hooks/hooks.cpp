@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include "shadowhook.h"
 #include "imgui.h"
+#include "imgui_impl_opengl3.h"
 #include "il2cpp/il2cpp.h"
 #include "il2cpp/resolver.h"
 #define LOG_TAG "MY_CUSTOM_SO"
@@ -28,7 +29,25 @@ static EGLBoolean HookEglSwapBuffers(
         EGLSurface surface
 )
 {
-    return g_OriginalEglSwapBuffers(display, surface);
+    if (g_ImGuiReady.load())
+    {
+        ImGui_ImplOpenGL3_NewFrame();
+
+        ImGui::NewFrame();
+
+        RenderImGui();
+
+        ImGui::Render();
+
+        ImGui_ImplOpenGL3_RenderDrawData(
+                ImGui::GetDrawData()
+        );
+    }
+
+    return g_OriginalEglSwapBuffers(
+            display,
+            surface
+    );
 }
 bool InstallEglHook()
 {

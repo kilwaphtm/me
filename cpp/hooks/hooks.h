@@ -9,3 +9,5 @@ int HookGetTouchCount();
 bool HookGetMouseButton(int button);
 
 bool InstallUnityInputHooks();
+
+void RenderImGui();
