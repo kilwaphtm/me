@@ -34,57 +34,6 @@ extern const unsigned int g_icon_png_size;
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-// =========================================================
-// UNITY TOUCH
-// =========================================================
-
-struct UnityVector2
-{
-    float x;
-    float y;
-};
-
-enum class UnityTouchPhase : int32_t
-{
-    Began      = 0,
-    Moved      = 1,
-    Stationary = 2,
-    Ended      = 3,
-    Canceled   = 4
-};
-
-enum class UnityTouchType : int32_t
-{
-    Direct   = 0,
-    Indirect = 1,
-    Stylus   = 2
-};
-
-struct UnityTouch
-{
-    int32_t m_FingerId;
-
-    UnityVector2 m_Position;
-    UnityVector2 m_RawPosition;
-    UnityVector2 m_PositionDelta;
-
-    float m_TimeDelta;
-
-    int32_t m_TapCount;
-
-    UnityTouchPhase m_Phase;
-    UnityTouchType m_Type;
-
-    float m_Pressure;
-    float m_MaximumPossiblePressure;
-
-    float m_Radius;
-    float m_RadiusVariance;
-
-    float m_AltitudeAngle;
-    float m_AzimuthAngle;
-};
-
 
 // =========================================================
 // UNITY INPUT HOOK TYPES
@@ -1309,56 +1258,11 @@ static void DrawMenu()
         );
     }
 }
-
-// =========================================================
-// STRING MATCH
-// =========================================================
-
-static bool ImageNameMatches(
-        const char* name,
-        const char* wanted)
-{
-    if (!name || !wanted)
-        return false;
-
-
-    if (strcmp(name, wanted) == 0)
-        return true;
-
-
-    const size_t len =
-            strlen(name);
-
-
-    if (
-            len > 4 &&
-            strcmp(
-                    name + len - 4,
-                    ".dll"
-            ) == 0
-            )
-    {
-        if (
-                strncmp(
-                        name,
-                        wanted,
-                        len - 4
-                ) == 0
-                )
-        {
-            return true;
-        }
-    }
-
-
-    return false;
-}
-
 // =========================================================
 // GET UNITY TOUCH
 // =========================================================
 
-static bool GetUnityTouch(
+bool GetUnityTouch(
         int index,
         UnityTouch& output)
 {
