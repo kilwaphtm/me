@@ -1102,7 +1102,7 @@ static void DrawMainMenu(
 // =========================================================
 // DRAW MENU
 // =========================================================
-static void DrawMenu()
+void RenderImGui()
 {
     if (!g_ImGuiReady.load())
         return;
