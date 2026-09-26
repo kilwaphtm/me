@@ -36,6 +36,7 @@ std::atomic<bool> g_ImGuiReady{false};
 std::atomic<bool> g_InputHooksInstalled{false};
 static int g_ScreenWidth = 0;
 static int g_ScreenHeight = 0;
+static bool LoadEmbeddedIcon();
 bool InitializeImGui()
 {
     if (g_ImGuiReady.load())
@@ -62,6 +63,8 @@ bool InitializeImGui()
 
         return false;
     }
+
+    LoadEmbeddedIcon();
 
     g_ImGuiReady.store(true);
 
