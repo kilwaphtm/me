@@ -87,3 +87,17 @@ bool GetUnityTouch(
         int index,
         UnityTouch& output
 );
+
+// =========================================================
+// UNITY INPUT HOOK TYPES
+// =========================================================
+
+using GetTouchCountFn = int (*)();
+
+using GetMouseButtonFn = bool (*)(int);
+
+extern GetTouchCountFn g_OriginalGetTouchCount;
+extern GetMouseButtonFn g_OriginalGetMouseButton;
+
+extern void* g_GetTouchCountStub;
+extern void* g_GetMouseButtonStub;

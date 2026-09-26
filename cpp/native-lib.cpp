@@ -38,19 +38,8 @@ extern const unsigned int g_icon_png_size;
 // =========================================================
 // UNITY INPUT HOOK TYPES
 // =========================================================
-
 using GetTouchCountFn = int (*)();
-
 using GetMouseButtonFn = bool (*)(int);
-
-static GetTouchCountFn g_OriginalGetTouchCount = nullptr;
-
-static GetMouseButtonFn g_OriginalGetMouseButton = nullptr;
-
-static void* g_GetTouchCountStub = nullptr;
-static void* g_GetMouseButtonStub = nullptr;
-
-
 // =========================================================
 // GLOBAL STATE
 // =========================================================
@@ -1258,69 +1247,6 @@ static void DrawMenu()
         );
     }
 }
-// =========================================================
-// GET UNITY TOUCH
-// =========================================================
-
-bool GetUnityTouch(
-        int index,
-        UnityTouch& output)
-{
-    if (
-            !g_GetTouchMethod ||
-            !g_il2cpp_runtime_invoke ||
-            !g_il2cpp_object_unbox
-            )
-    {
-        return false;
-    }
-
-
-    void* args[1];
-
-    args[0] = &index;
-
-
-    Il2CppObject* exception = nullptr;
-
-
-    Il2CppObject* result =
-            g_il2cpp_runtime_invoke(
-                    g_GetTouchMethod,
-                    nullptr,
-                    args,
-                    &exception
-            );
-
-
-    if (exception)
-        return false;
-
-
-    if (!result)
-        return false;
-
-
-    void* unboxed =
-            g_il2cpp_object_unbox(
-                    result
-            );
-
-
-    if (!unboxed)
-        return false;
-
-
-    memcpy(
-            &output,
-            unboxed,
-            sizeof(UnityTouch)
-    );
-
-
-    return true;
-}
-
 
 // =========================================ٍٍٍٍٍٍٍٍٍٍ================
 // UPDATE IMGUI TOUCH
