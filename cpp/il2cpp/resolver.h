@@ -14,10 +14,11 @@ Il2CppClass* FindClass(
         const char* namespaceName,
         const char* className
 );
+Il2CppClass* FindClassAuto(
+        const char* className
+);
 
 const MethodInfo* FindMethod(
-        const char* imageName,
-        const char* namespaceName,
         const char* className,
         const char* methodName,
         int parameterCount = -1

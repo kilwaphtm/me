@@ -57,7 +57,6 @@ static bool ImageNameMatches(
 // =========================================================
 // FIND IMAGE
 // =========================================================
-
 Il2CppImage* FindImage(
         const char* imageName)
 {
@@ -147,8 +146,272 @@ Il2CppImage* FindImage(
 
     return nullptr;
 }
+// =========================================================
+// FIND CLASS AUTOMATICALLY
+// =========================================================
+Il2CppClass* FindClassAuto(
+        const char* className)
+{
+    if (!className)
+        return nullptr;
 
+    if (!g_il2cpp_domain_get ||
+        !g_il2cpp_domain_get_assemblies ||
+        !g_il2cpp_assembly_get_image ||
+        !g_il2cpp_image_get_class_count ||
+        !g_il2cpp_image_get_class ||
+        !g_il2cpp_class_get_name ||
+        !g_il2cpp_class_get_namespace)
+    {
+        LOGI("[RESOLVER] Class enumeration API not ready");
+        return nullptr;
+    }
 
+    Il2CppDomain* domain =
+            g_il2cpp_domain_get();
+
+    if (!domain)
+    {
+        LOGI("[RESOLVER] Domain not ready");
+        return nullptr;
+    }
+
+    size_t assemblyCount = 0;
+
+    Il2CppAssembly** assemblies =
+            g_il2cpp_domain_get_assemblies(
+                    domain,
+                    &assemblyCount
+            );
+
+    if (!assemblies || assemblyCount == 0)
+    {
+        LOGI("[RESOLVER] Assemblies not ready");
+        return nullptr;
+    }
+
+    LOGI(
+            "[RESOLVER] Searching class: %s",
+            className
+    );
+
+    Il2CppClass* foundClass = nullptr;
+
+    int matchCount = 0;
+
+    for (size_t i = 0; i < assemblyCount; ++i)
+    {
+        if (!assemblies[i])
+            continue;
+
+        Il2CppImage* image =
+                g_il2cpp_assembly_get_image(
+                        assemblies[i]
+                );
+
+        if (!image)
+            continue;
+
+        const char* imageName =
+                g_il2cpp_image_get_name(
+                        image
+                );
+
+        size_t classCount =
+                g_il2cpp_image_get_class_count(
+                        image
+                );
+
+        for (size_t j = 0; j < classCount; ++j)
+        {
+            Il2CppClass* klass =
+                    g_il2cpp_image_get_class(
+                            image,
+                            j
+                    );
+
+            if (!klass)
+                continue;
+
+            const char* currentClassName =
+                    g_il2cpp_class_get_name(
+                            klass
+                    );
+
+            if (!currentClassName)
+                continue;
+
+            if (strcmp(currentClassName, className) != 0)
+                continue;
+
+            const char* namespaceName =
+                    g_il2cpp_class_get_namespace(
+                            klass
+                    );
+
+            ++matchCount;
+
+            LOGI(
+                    "[RESOLVER] CLASS MATCH #%d: %s.%s | Image: %s",
+                    matchCount,
+                    namespaceName ? namespaceName : "",
+                    currentClassName,
+                    imageName ? imageName : ""
+            );
+
+            if (matchCount == 1)
+            {
+                foundClass = klass;
+            }
+        }
+    }
+
+    if (matchCount == 0)
+    {
+        LOGI(
+                "[RESOLVER] CLASS NOT FOUND: %s",
+                className
+        );
+
+        return nullptr;
+    }
+
+    if (matchCount > 1)
+    {
+        LOGI(
+                "[RESOLVER] MULTIPLE CLASSES FOUND: %s (%d matches)",
+                className,
+                matchCount
+        );
+
+        return nullptr;
+    }
+
+    LOGI(
+            "[RESOLVER] CLASS FOUND: %s",
+            className
+    );
+
+    return foundClass;
+}
+// =========================================================
+// FIND CLASS
+// =========================================================
+
+Il2CppClass* FindClass(
+        const char* imageName,
+        const char* namespaceName,
+        const char* className)
+{
+    if (!imageName || !namespaceName || !className)
+        return nullptr;
+
+    if (!g_il2cpp_class_from_name)
+    {
+        LOGI("[RESOLVER] class_from_name API not ready");
+        return nullptr;
+    }
+
+    Il2CppImage* image = FindImage(imageName);
+
+    if (!image)
+    {
+        LOGI(
+                "[RESOLVER] Cannot find image for class: %s",
+                className
+        );
+
+        return nullptr;
+    }
+
+    Il2CppClass* klass =
+            g_il2cpp_class_from_name(
+                    image,
+                    namespaceName,
+                    className
+            );
+
+    if (!klass)
+    {
+        LOGI(
+                "[RESOLVER] CLASS NOT FOUND: %s.%s",
+                namespaceName,
+                className
+        );
+
+        return nullptr;
+    }
+
+    LOGI(
+            "[RESOLVER] CLASS FOUND: %s.%s",
+            namespaceName,
+            className
+    );
+
+    return klass;
+}
+// =========================================================
+// FIND METHOD
+// =========================================================
+
+const MethodInfo* FindMethod(
+        const char* className,
+        const char* methodName,
+        int parameterCount)
+{
+    if (!className || !methodName)
+        return nullptr;
+
+    if (!g_il2cpp_class_get_method_from_name)
+    {
+        LOGI(
+                "[RESOLVER] class_get_method_from_name API not ready"
+        );
+
+        return nullptr;
+    }
+
+    Il2CppClass* klass =
+            FindClassAuto(className);
+
+    if (!klass)
+    {
+        LOGI(
+                "[RESOLVER] Cannot find class: %s",
+                className
+        );
+
+        return nullptr;
+    }
+
+    const MethodInfo* method =
+            g_il2cpp_class_get_method_from_name(
+                    klass,
+                    methodName,
+                    parameterCount
+            );
+
+    if (!method)
+    {
+        LOGI(
+                "[RESOLVER] METHOD NOT FOUND: %s.%s(%d)",
+                className,
+                methodName,
+                parameterCount
+        );
+
+        return nullptr;
+    }
+
+    LOGI(
+            "[RESOLVER] METHOD FOUND: %s.%s(%d)",
+            className,
+            methodName,
+            parameterCount
+    );
+
+    return method;
+}
 // =========================================================
 // FIND UNITY INPUT IMAGE
 // =========================================================
