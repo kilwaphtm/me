@@ -515,9 +515,8 @@ static void* InputThread(void*)
 
         const MethodInfo* testMethod =
                 FindMethod(
-                        "test",
-                        "Test2",
-                        -1
+                        "SlotMachineManager",
+                        "GetSpinResultSymbolsAnalyticFormat"
                 );
 
         if (testMethod)
