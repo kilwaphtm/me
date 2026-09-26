@@ -356,8 +356,7 @@ Il2CppClass* FindClass(
 
 const MethodInfo* FindMethod(
         const char* className,
-        const char* methodName,
-        int parameterCount)
+        const char* methodName)
 {
     if (!className || !methodName)
         return nullptr;
@@ -388,7 +387,7 @@ const MethodInfo* FindMethod(
             g_il2cpp_class_get_method_from_name(
                     klass,
                     methodName,
-                    parameterCount
+                    -1
             );
 
     if (!method)
@@ -396,8 +395,8 @@ const MethodInfo* FindMethod(
         LOGI(
                 "[RESOLVER] METHOD NOT FOUND: %s.%s(%d)",
                 className,
-                methodName,
-                parameterCount
+                methodName
+
         );
 
         return nullptr;
@@ -406,8 +405,8 @@ const MethodInfo* FindMethod(
     LOGI(
             "[RESOLVER] METHOD FOUND: %s.%s(%d)",
             className,
-            methodName,
-            parameterCount
+            methodName
+
     );
 
     return method;
