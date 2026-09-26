@@ -1,23 +1,22 @@
 #include "hooks.h"
-
 #include <android/log.h>
 #include <EGL/egl.h>
 #include <dlfcn.h>
-
-#include "shadowhook.h"
 #include <pthread.h>
-
+#include <atomic>
+#include <unistd.h>
+#include "shadowhook.h"
+#include "imgui.h"
+#include "il2cpp/il2cpp.h"
+#include "il2cpp/resolver.h"
 #define LOG_TAG "MY_CUSTOM_SO"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
-
 static EGLBoolean (*g_OriginalEglSwapBuffers)(
         EGLDisplay,
         EGLSurface
 ) = nullptr;
-
 static void* g_EglStub = nullptr;
-
 static EGLBoolean HookEglSwapBuffers(
         EGLDisplay display,
         EGLSurface surface
@@ -25,7 +24,6 @@ static EGLBoolean HookEglSwapBuffers(
 {
     return g_OriginalEglSwapBuffers(display, surface);
 }
-
 bool InstallEglHook()
 {
     void* eglSwapBuffersAddr = dlsym(
@@ -74,10 +72,26 @@ bool InstallEglHook()
 
     return true;
 }
-
 static void* HookThread(void*)
 {
     LOGI("[HOOK-THREAD] Hook thread started");
+
+    int result = shadowhook_init(
+            SHADOWHOOK_MODE_UNIQUE,
+            false
+    );
+
+    LOGI("[SHADOWHOOK] init result: %d", result);
+
+    if (result != 0)
+    {
+        LOGE("[SHADOWHOOK] init FAILED");
+        return nullptr;
+    }
+
+    g_ShadowHookReady.store(true);
+
+    LOGI("[SHADOWHOOK] initialized successfully");
 
     if (!InstallEglHook())
     {
@@ -88,9 +102,27 @@ static void* HookThread(void*)
         LOGI("[HOOK-THREAD] EGL hook installed");
     }
 
+    pthread_t inputThread;
+
+    const int inputResult = pthread_create(
+            &inputThread,
+            nullptr,
+            InputThread,
+            nullptr
+    );
+
+    if (inputResult != 0)
+    {
+        LOGE("[INPUT] pthread_create FAILED: %d", inputResult);
+    }
+    else
+    {
+        pthread_detach(inputThread);
+        LOGI("[INPUT] Input thread started");
+    }
+
     return nullptr;
 }
-
 // =========================================================
 // HOOK THREAD
 // =========================================================
@@ -117,4 +149,319 @@ void StartHookThread()
     pthread_detach(thread);
 
     LOGI("[HOOK-THREAD] Hook thread detached");
+}
+// =========================================================
+// UNITY INPUT
+// =========================================================
+extern std::atomic<bool> g_ImGuiReady;
+extern std::atomic<bool> g_InputHooksInstalled;
+extern std::atomic<bool> g_ShadowHookReady;
+static void* InputThread(void*);
+// =========================================================
+// UPDATE IMGUI TOUCH
+// =========================================================
+void UpdateImGuiTouch()
+{
+    if (!g_ImGuiReady.load())
+        return;
+
+    if (!g_OriginalGetTouchCount)
+        return;
+
+    ImGuiIO& io =
+            ImGui::GetIO();
+
+    const int count =
+            g_OriginalGetTouchCount();
+
+    if (count <= 0)
+        return;
+
+    UnityTouch touch{};
+
+    if (!GetUnityTouch(
+            0,
+            touch
+    ))
+    {
+        return;
+    }
+
+    io.AddMouseSourceEvent(
+            ImGuiMouseSource_TouchScreen
+    );
+
+    float x =
+            touch.m_Position.x;
+
+    float y =
+            io.DisplaySize.y -
+            touch.m_Position.y;
+
+    switch (touch.m_Phase)
+    {
+        case UnityTouchPhase::Began:
+
+            io.AddMousePosEvent(
+                    x,
+                    y
+            );
+
+            io.AddMouseButtonEvent(
+                    0,
+                    true
+            );
+
+            break;
+
+
+        case UnityTouchPhase::Moved:
+
+        case UnityTouchPhase::Stationary:
+
+            io.AddMousePosEvent(
+                    x,
+                    y
+            );
+
+            break;
+
+
+        case UnityTouchPhase::Ended:
+
+        case UnityTouchPhase::Canceled:
+
+            io.AddMousePosEvent(
+                    x,
+                    y
+            );
+
+            io.AddMouseButtonEvent(
+                    0,
+                    false
+            );
+
+            io.AddMousePosEvent(
+                    -1,
+                    -1
+            );
+
+            break;
+    }
+}
+// =========================================================
+// get_touchCount HOOK
+// =========================================================
+int HookGetTouchCount()
+{
+    if (!g_OriginalGetTouchCount)
+        return 0;
+
+    const int count =
+            g_OriginalGetTouchCount();
+
+    if (g_ImGuiReady.load())
+    {
+        UpdateImGuiTouch();
+
+        ImGuiIO& io =
+                ImGui::GetIO();
+
+        if (io.WantCaptureMouse)
+            return 0;
+    }
+
+    return count;
+}
+// =========================================================
+// GetMouseButton HOOK
+// =========================================================
+bool HookGetMouseButton(
+        int button)
+{
+    if (!g_OriginalGetMouseButton)
+        return false;
+
+    const bool result =
+            g_OriginalGetMouseButton(
+                    button
+            );
+
+    if (!g_ImGuiReady.load())
+        return result;
+
+    ImGuiIO& io =
+            ImGui::GetIO();
+
+    if (io.WantCaptureMouse)
+        return false;
+
+    return result;
+}
+// =========================================================
+// INSTALL UNITY INPUT HOOKS
+// =========================================================
+bool InstallUnityInputHooks()
+{
+    if (g_InputHooksInstalled.load())
+        return true;
+
+    if (
+            !g_GetTouchCountMethod ||
+            !g_GetMouseButtonMethod
+            )
+    {
+        return false;
+    }
+
+    void* touchCountAddress =
+            g_GetTouchCountMethod->methodPointer;
+
+    void* mouseButtonAddress =
+            g_GetMouseButtonMethod->methodPointer;
+
+    if (!touchCountAddress)
+    {
+        LOGE(
+                "[INPUT] get_touchCount methodPointer NULL"
+        );
+
+        return false;
+    }
+
+    if (!mouseButtonAddress)
+    {
+        LOGE(
+                "[INPUT] GetMouseButton methodPointer NULL"
+        );
+
+        return false;
+    }
+
+    LOGI(
+            "[INPUT] get_touchCount address = %p",
+            touchCountAddress
+    );
+
+    LOGI(
+            "[INPUT] GetMouseButton address = %p",
+            mouseButtonAddress
+    );
+
+
+    // -----------------------------------------------------
+    // get_touchCount
+    // -----------------------------------------------------
+
+    g_GetTouchCountStub =
+            shadowhook_hook_func_addr(
+                    touchCountAddress,
+
+                    reinterpret_cast<void*>(
+                            HookGetTouchCount
+                    ),
+
+                    reinterpret_cast<void**>(
+                            &g_OriginalGetTouchCount
+                    )
+            );
+
+    if (
+            !g_GetTouchCountStub ||
+            !g_OriginalGetTouchCount
+            )
+    {
+        LOGE(
+                "[INPUT] get_touchCount hook FAILED"
+        );
+
+        g_GetTouchCountStub = nullptr;
+        g_OriginalGetTouchCount = nullptr;
+
+        return false;
+    }
+
+
+    // -----------------------------------------------------
+    // GetMouseButton
+    // -----------------------------------------------------
+
+    g_GetMouseButtonStub =
+            shadowhook_hook_func_addr(
+                    mouseButtonAddress,
+
+                    reinterpret_cast<void*>(
+                            HookGetMouseButton
+                    ),
+
+                    reinterpret_cast<void**>(
+                            &g_OriginalGetMouseButton
+                    )
+            );
+
+    if (
+            !g_GetMouseButtonStub ||
+            !g_OriginalGetMouseButton
+            )
+    {
+        LOGE(
+                "[INPUT] GetMouseButton hook FAILED"
+        );
+
+        g_GetMouseButtonStub = nullptr;
+        g_OriginalGetMouseButton = nullptr;
+
+        return false;
+    }
+
+
+    g_InputHooksInstalled.store(true);
+
+    LOGI(
+            "[INPUT] Unity Input hooks INSTALLED"
+    );
+
+    return true;
+}
+// ========================================================
+// INPUT THREAD
+// =========================================================
+static void* InputThread(void*)
+{
+    LOGI("[INPUT] Input thread started");
+
+    while (!g_InputHooksInstalled.load())
+    {
+        if (!g_ShadowHookReady.load())
+        {
+            sleep(1);
+            continue;
+        }
+
+        if (!LoadIl2CppAPI())
+        {
+            LOGI("[INPUT] Waiting for IL2CPP...");
+            sleep(1);
+            continue;
+        }
+
+        if (!FindUnityInputMethods())
+        {
+            LOGI("[INPUT] Unity Input not ready - retry");
+            sleep(1);
+            continue;
+        }
+
+        if (InstallUnityInputHooks())
+        {
+            LOGI("[INPUT] Input initialization COMPLETE");
+            break;
+        }
+
+        LOGI("[INPUT] Hook installation failed - retry");
+        sleep(1);
+    }
+
+    LOGI("[INPUT] Input thread finished");
+    return nullptr;
 }
