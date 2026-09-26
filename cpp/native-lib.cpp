@@ -36,6 +36,39 @@ std::atomic<bool> g_ImGuiReady{false};
 std::atomic<bool> g_InputHooksInstalled{false};
 static int g_ScreenWidth = 0;
 static int g_ScreenHeight = 0;
+bool InitializeImGui()
+{
+    if (g_ImGuiReady.load())
+        return true;
+
+    LOGI("[IMGUI] Initializing ImGui...");
+
+    IMGUI_CHECKVERSION();
+
+    ImGui::CreateContext();
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    io.DisplaySize = ImVec2(
+            static_cast<float>(g_ScreenWidth),
+            static_cast<float>(g_ScreenHeight)
+    );
+
+    if (!ImGui_ImplOpenGL3_Init("#version 300 es"))
+    {
+        LOGE("[IMGUI] ImGui_ImplOpenGL3_Init FAILED");
+
+        ImGui::DestroyContext();
+
+        return false;
+    }
+
+    g_ImGuiReady.store(true);
+
+    LOGI("[IMGUI] ImGui initialized successfully");
+
+    return true;
+}
 // =========================================================
 // MENU STATE
 // =========================================================
