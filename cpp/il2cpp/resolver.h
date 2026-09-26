@@ -20,8 +20,7 @@ Il2CppClass* FindClassAuto(
 
 const MethodInfo* FindMethod(
         const char* className,
-        const char* methodName,
-        int parameterCount = -1
+        const char* methodName
 );
 
 
