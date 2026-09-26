@@ -12,6 +12,12 @@
 #define LOG_TAG "MY_CUSTOM_SO"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+extern std::atomic<bool> g_ImGuiReady;
+extern std::atomic<bool> g_InputHooksInstalled;
+extern std::atomic<bool> g_ShadowHookReady;
+
+static void* InputThread(void*);
+
 static EGLBoolean (*g_OriginalEglSwapBuffers)(
         EGLDisplay,
         EGLSurface
@@ -150,13 +156,6 @@ void StartHookThread()
 
     LOGI("[HOOK-THREAD] Hook thread detached");
 }
-// =========================================================
-// UNITY INPUT
-// =========================================================
-extern std::atomic<bool> g_ImGuiReady;
-extern std::atomic<bool> g_InputHooksInstalled;
-extern std::atomic<bool> g_ShadowHookReady;
-static void* InputThread(void*);
 // =========================================================
 // UPDATE IMGUI TOUCH
 // =========================================================
