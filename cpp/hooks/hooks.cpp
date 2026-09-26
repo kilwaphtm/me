@@ -521,93 +521,43 @@ static void* InputThread(void*)
 
         if (testMethod)
         {
-            LOGI("[TEST] Method found");
+            MethodInfoData data;
 
-            if (g_il2cpp_method_get_param_count)
+            if (GetMethodInfoData(testMethod, data))
             {
-                uint32_t paramCount =
-                        g_il2cpp_method_get_param_count(
-                                testMethod
-                        );
+                LOGI("[TEST] ===== MethodInfoData =====");
 
                 LOGI(
                         "[TEST] Parameter count = %u",
-                        paramCount
+                        data.parameterCount
                 );
 
-                for (uint32_t i = 0; i < paramCount; i++)
-                {
-                    const char* paramName = nullptr;
-                    const char* paramTypeName = nullptr;
+                LOGI(
+                        "[TEST] parameterTypes size = %zu",
+                        data.parameterTypes.size()
+                );
 
-                    if (g_il2cpp_method_get_param_name)
-                    {
-                        paramName =
-                                g_il2cpp_method_get_param_name(
-                                        testMethod,
-                                        i
-                                );
-                    }
+                LOGI(
+                        "[TEST] parameterNames size = %zu",
+                        data.parameterNames.size()
+                );
 
-                    if (
-                            g_il2cpp_method_get_param &&
-                            g_il2cpp_type_get_name
-                            )
-                    {
-                        const Il2CppType* paramType =
-                                g_il2cpp_method_get_param(
-                                        testMethod,
-                                        i
-                                );
-
-                        if (paramType)
-                        {
-                            paramTypeName =
-                                    g_il2cpp_type_get_name(
-                                            paramType
-                                    );
-                        }
-                    }
-
-                    LOGI(
-                            "[TEST] Param[%u] name=%s type=%s",
-                            i,
-                            paramName ? paramName : "<null>",
-                            paramTypeName ? paramTypeName : "<null>"
-                    );
-                }
-            }
-
-            if (
-                    g_il2cpp_method_get_return_type &&
-                    g_il2cpp_type_get_name
-                    )
-            {
-                const Il2CppType* returnType =
-                        g_il2cpp_method_get_return_type(
-                                testMethod
+                const char* returnType =
+                        g_il2cpp_type_get_name(
+                                data.returnType
                         );
 
-                if (returnType)
-                {
-                    const char* returnTypeName =
-                            g_il2cpp_type_get_name(
-                                    returnType
-                            );
-
-                    LOGI(
-                            "[TEST] Return type = %s",
-                            returnTypeName
-                            ? returnTypeName
-                            : "<null>"
-                    );
-                }
+                LOGI(
+                        "[TEST] Return type = %s",
+                        returnType ? returnType : "<null>"
+                );
+            }
+            else
+            {
+                LOGI("[TEST] GetMethodInfoData FAILED");
             }
         }
-        else
-        {
-            LOGI("[TEST] test.TEST not found");
-        }
+
 
 
 
