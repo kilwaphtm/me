@@ -418,7 +418,7 @@ bool GetMethodInfoData(
 {
     if (!method)
         return false;
-
+    output.methodName = g_il2cpp_method_get_name(method);
     if (!g_il2cpp_method_get_param_count ||
         !g_il2cpp_method_get_return_type ||
         !g_il2cpp_method_is_generic ||
@@ -506,7 +506,8 @@ bool ResolveMethod(
     {
         return false;
     }
-
+    output.className = className;
+    output.resultKey = output.className + "::" + output.methodName;
     if (printInfo)
     {
         LOGI("[RESOLVER] ===== METHOD INFO =====");

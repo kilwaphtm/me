@@ -1,5 +1,5 @@
 #pragma once
-
+#include <string>
 #include "il2cpp.h"
 #include <cstdint>
 #include <vector>
@@ -27,6 +27,9 @@ const MethodInfo* FindMethod(
 
 struct MethodInfoData
 {
+    std::string className;
+    std::string methodName;
+    std::string resultKey;
     const MethodInfo* method;
     void* address;
 

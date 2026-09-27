@@ -58,6 +58,7 @@ struct HookResult
 {
     std::vector<InspectedValue> arguments;
     InspectedValue returnValue;
+    bool hasNewResult = false;
 };
 // =========================================================
 // IL2CPP VALUE INSPECTOR
