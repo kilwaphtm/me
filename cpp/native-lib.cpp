@@ -15,6 +15,7 @@
 #include "il2cpp/il2cpp.h"
 #include "il2cpp/resolver.h"
 #include "hooks/hooks.h"
+#include "hooks/mywork.h"
 // =========================================================
 // LOG
 // =========================================================
@@ -606,15 +607,16 @@ struct Page
 // =========================================================
 static void DrawHome(float scale)
 {
-    (void) scale;
-
-    /*
-     * HOME PAGE
-     *
-     * Empty intentionally.
-     *
-     * Add components here later.
-     */
+    if (Components::Button(
+            "TEST RESOLVER",
+            300.0f,
+            UI::ButtonHeight,
+            scale
+    ))
+    {
+        TestResolverUsage();
+        TestResolverUsage2();
+    }
 }
 static void DrawFeatures(float scale)
 {
