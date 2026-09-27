@@ -43,6 +43,13 @@ bool GetMethodInfoData(
         const MethodInfo* method,
         MethodInfoData& output
 );
+bool ResolveMethod(
+        const char* className,
+        const char* methodName,
+        MethodInfoData& output,
+        bool printInfo
+);
+
 
 extern Il2CppImage* g_InputImage;
 extern Il2CppClass* g_InputClass;

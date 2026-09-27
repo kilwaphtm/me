@@ -442,6 +442,8 @@ bool GetMethodInfoData(
                     method
             );
     output.parameterTypes.clear();
+    output.parameterNames.clear();
+
     for (uint32_t i = 0; i < output.parameterCount; i++)
     {
         const Il2CppType* paramType =
@@ -450,7 +452,14 @@ bool GetMethodInfoData(
                         i
                 );
 
+        const char* paramName =
+                g_il2cpp_method_get_param_name(
+                        method,
+                        i
+                );
+
         output.parameterTypes.push_back(paramType);
+        output.parameterNames.push_back(paramName);
     }
 
     output.returnType =
@@ -472,6 +481,87 @@ bool GetMethodInfoData(
             g_il2cpp_method_is_instance(
                     method
             );
+
+    return true;
+}
+// =========================================================
+bool ResolveMethod(
+        const char* className,
+        const char* methodName,
+        MethodInfoData& output,
+        bool printInfo)
+{
+    const MethodInfo* method =
+            FindMethod(
+                    className,
+                    methodName
+            );
+
+    if (!method)
+        return false;
+
+    if (!GetMethodInfoData(
+            method,
+            output))
+    {
+        return false;
+    }
+
+    if (printInfo)
+    {
+        LOGI("[RESOLVER] ===== METHOD INFO =====");
+
+        LOGI("[RESOLVER] Class  : %s",
+             className ? className : "<null>");
+
+        LOGI("[RESOLVER] Method : %s",
+             methodName ? methodName : "<null>");
+
+        LOGI("[RESOLVER] Address: %p",
+             output.address);
+
+        LOGI("[RESOLVER] Parameter Count: %u",
+             output.parameterCount);
+
+        for (uint32_t i = 0; i < output.parameterCount; i++)
+        {
+            const char* typeName =
+                    g_il2cpp_type_get_name(
+                            output.parameterTypes[i]
+                    );
+
+            const char* paramName =
+                    output.parameterNames[i];
+
+            LOGI(
+                    "[RESOLVER] Param[%u] name=%s type=%s",
+                    i,
+                    paramName ? paramName : "<null>",
+                    typeName ? typeName : "<null>"
+            );
+        }
+
+        const char* returnTypeName =
+                g_il2cpp_type_get_name(
+                        output.returnType
+                );
+
+        LOGI("[RESOLVER] Return Type: %s",
+             returnTypeName
+             ? returnTypeName
+             : "<null>");
+
+        LOGI("[RESOLVER] Is Generic  : %s",
+             output.isGeneric ? "true" : "false");
+
+        LOGI("[RESOLVER] Is Inflated : %s",
+             output.isInflated ? "true" : "false");
+
+        LOGI("[RESOLVER] Is Instance  : %s",
+             output.isInstance ? "true" : "false");
+
+        LOGI("[RESOLVER] =======================");
+    }
 
     return true;
 }
@@ -654,7 +744,9 @@ bool GetUnityTouch(
     if (
             !g_GetTouchMethod ||
             !g_il2cpp_runtime_invoke ||
-            !g_il2cpp_object_unbox
+            !g_il2cpp_object_unbox ||
+            !g_il2cpp_method_get_param ||
+            !g_il2cpp_method_get_param_name
             )
     {
         return false;
