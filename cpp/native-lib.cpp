@@ -16,6 +16,7 @@
 #include "il2cpp/resolver.h"
 #include "hooks/hooks.h"
 #include "hooks/mywork.h"
+#include "hooks/myhook.h"
 // =========================================================
 // LOG
 // =========================================================
@@ -616,6 +617,24 @@ static void DrawHome(float scale)
     {
         TestResolverUsage();
         TestResolverUsage2();
+    }
+    HookResult* result =
+            HookResultManager::Instance().Get(
+                    "BetStateController::get_CurrentBet"
+            );
+
+    if (result)
+    {
+        ImGui::Separator();
+
+        ImGui::Text(
+                "CurrentBet: %s",
+                result->returnValue.displayValue.c_str()
+        );
+        if(result->hasNewResult){
+            result->hasNewResult = false;
+        }
+
     }
 }
 static void DrawFeatures(float scale)
