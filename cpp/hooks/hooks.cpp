@@ -509,55 +509,6 @@ static void* InputThread(void*)
             continue;
         }
 
-        // =====================================================
-        // TEST METHOD METADATA
-        // =====================================================
-
-        const MethodInfo* testMethod =
-                FindMethod(
-                        "SlotMachineManager",
-                        "GetSpinResultSymbolsAnalyticFormat"
-                );
-
-        if (testMethod)
-        {
-            MethodInfoData data;
-
-            if (GetMethodInfoData(testMethod, data))
-            {
-                LOGI("[TEST] ===== MethodInfoData =====");
-
-                LOGI(
-                        "[TEST] Parameter count = %u",
-                        data.parameterCount
-                );
-
-                LOGI(
-                        "[TEST] parameterTypes size = %zu",
-                        data.parameterTypes.size()
-                );
-
-                LOGI(
-                        "[TEST] parameterNames size = %zu",
-                        data.parameterNames.size()
-                );
-
-                const char* returnType =
-                        g_il2cpp_type_get_name(
-                                data.returnType
-                        );
-
-                LOGI(
-                        "[TEST] Return type = %s",
-                        returnType ? returnType : "<null>"
-                );
-            }
-            else
-            {
-                LOGI("[TEST] GetMethodInfoData FAILED");
-            }
-        }
-
 
 
 
