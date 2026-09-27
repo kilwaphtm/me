@@ -141,7 +141,28 @@ void TestResolverUsage()
 
     if (hook.Monitor())
     {
-        LOGI("[MYWORK] Monitor SUCCESS");
+        LOGI("[MYWORK2] Monitor SUCCESS");
+
+        HookResult* result =
+                HookResultManager::Instance().Get(
+                        data.resultKey
+                );
+
+        if (result)
+        {
+            LOGI(
+                    "[RESULT MANAGER] FOUND: %s | Result=%p",
+                    data.resultKey.c_str(),
+                    result
+            );
+        }
+        else
+        {
+            LOGI(
+                    "[RESULT MANAGER] NOT FOUND: %s",
+                    data.resultKey.c_str()
+            );
+        }
     }
     else
     {
@@ -219,6 +240,26 @@ void TestResolverUsage2()
     if (hook.Monitor())
     {
         LOGI("[MYWORK2] Monitor SUCCESS");
+        HookResult* result =
+                HookResultManager::Instance().Get(
+                        data.resultKey
+                );
+
+        if (result)
+        {
+            LOGI(
+                    "[RESULT MANAGER] FOUND: %s | Result=%p",
+                    data.resultKey.c_str(),
+                    result
+            );
+        }
+        else
+        {
+            LOGI(
+                    "[RESULT MANAGER] NOT FOUND: %s",
+                    data.resultKey.c_str()
+            );
+        }
     }
     else
     {

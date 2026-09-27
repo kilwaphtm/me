@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <type_traits>
 #include <android/log.h>
-
+#include <unordered_map>
 #include "shadowhook.h"
 #include "../il2cpp/resolver.h"
 
@@ -42,6 +42,33 @@ class MyHook;
     MyHook<MyMethod_t> hook(data);
 =========================================================
 */
+class HookResultManager
+{
+public:
+    static HookResultManager& Instance()
+    {
+        static HookResultManager instance;
+        return instance;
+    }
+
+    void Register(const std::string& key, HookResult* result)
+    {
+        m_Results[key] = result;
+    }
+
+    HookResult* Get(const std::string& key)
+    {
+        auto it = m_Results.find(key);
+
+        if (it == m_Results.end())
+            return nullptr;
+
+        return it->second;
+    }
+
+private:
+    std::unordered_map<std::string, HookResult*> m_Results;
+};
 
 template<typename Return, typename... Args>
 class MyHook<Return (*)(Args...)>
@@ -56,9 +83,12 @@ public:
 
 public:
 
-    explicit MyHook(const MethodInfoData& data)
-            : m_Data(data)
+    explicit MyHook(const MethodInfoData& data) : m_Data(data)
     {
+        HookResultManager::Instance().Register(
+                m_Data.resultKey,
+                &m_LastResult
+        );
     }
 
 
@@ -217,6 +247,8 @@ private:
     */
     HookResult m_LastResult{};
 
+
+
     static inline MyHook* s_Instance = nullptr;
 
     template <size_t... I>
@@ -349,10 +381,11 @@ private:
         );
 
 
+
         if constexpr (std::is_void_v<Return>)
         {
             hook->m_Original(args...);
-
+            hook->m_LastResult.hasNewResult = true;
             MYHOOK_LOGI(
                     "[MYHOOK] AFTER ORIGINAL"
             );
@@ -375,6 +408,7 @@ private:
                                 hook->m_Data.returnType,
                                 &result
                         );
+                hook->m_LastResult.hasNewResult = true;
             }
 
             return result;
