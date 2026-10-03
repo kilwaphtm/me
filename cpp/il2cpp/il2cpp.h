@@ -11,17 +11,52 @@ struct Il2CppDomain;
 struct Il2CppAssembly;
 struct Il2CppImage;
 struct Il2CppClass;
-struct Il2CppObject;
-struct Il2CppType;
-struct Il2CppException;
+struct Il2CppObject
+{
+    Il2CppClass* klass;
+    void* monitor;
+};
+using Il2CppMethodPointer = void(*)();
 
+
+struct Il2CppType
+{
+    const void* data;
+    uint32_t bits;
+};
+struct Il2CppException;
+struct Il2CppThread;
 struct MethodInfo
 {
     void* methodPointer;
 };
 struct FieldInfo;
 struct PropertyInfo;
+struct Il2CppDelegate
+{
+    Il2CppObject object;
 
+    Il2CppMethodPointer method_ptr;
+    Il2CppMethodPointer invoke_impl;
+
+    Il2CppObject* target;
+    const MethodInfo* method;
+
+    void* delegate_trampoline;
+    intptr_t extraArg;
+
+    Il2CppObject* invoke_impl_this;
+
+    void* interp_method;
+    void* interp_invoke_impl;
+
+    void* method_info;
+    void* original_method_info;
+
+    Il2CppObject* data;
+
+    bool method_is_virtual;
+};
 // =========================================================
 // IL2CPP TYPE ENUM
 // =========================================================
@@ -353,6 +388,20 @@ using il2cpp_value_box_t =
 
 using il2cpp_domain_get_t =
         Il2CppDomain* (*)();
+using il2cpp_thread_attach_t =
+        Il2CppThread* (*)(Il2CppDomain*);
+
+using il2cpp_thread_get_all_attached_threads_t =
+        Il2CppThread** (*)(size_t* size);
+
+using il2cpp_thread_current_t =
+        Il2CppThread* (*)();
+
+extern il2cpp_thread_get_all_attached_threads_t
+        g_il2cpp_thread_get_all_attached_threads;
+
+extern il2cpp_thread_current_t
+        g_il2cpp_thread_current;
 
 using il2cpp_domain_get_assemblies_t =
         Il2CppAssembly** (*)(Il2CppDomain*, size_t*);
@@ -372,7 +421,6 @@ using il2cpp_image_get_class_count_t =
 using il2cpp_image_get_class_t =
         Il2CppClass* (*)(const Il2CppImage*, size_t);
 
-
 // =========================================================
 // GLOBAL IL2CPP HANDLE
 // =========================================================
@@ -388,6 +436,8 @@ extern void* g_Il2CppHandle;
 
 extern il2cpp_domain_get_t
         g_il2cpp_domain_get;
+extern il2cpp_thread_attach_t
+        g_il2cpp_thread_attach;
 
 extern il2cpp_domain_get_assemblies_t
         g_il2cpp_domain_get_assemblies;

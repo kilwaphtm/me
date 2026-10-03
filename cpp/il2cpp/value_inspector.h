@@ -56,6 +56,8 @@ struct InspectedValue
 };
 struct HookResult
 {
+    void* thisPtr = nullptr;
+    bool hasThis = false;
     std::vector<InspectedValue> arguments;
     InspectedValue returnValue;
     bool hasNewResult = false;

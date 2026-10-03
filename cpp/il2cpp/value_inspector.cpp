@@ -251,6 +251,25 @@ void Il2CppValueInspector::InspectEnumValue(
 }
 
 
+
+struct Il2CppGenericInst
+{
+    uint32_t type_argc;
+    const Il2CppType** type_argv;
+};
+
+struct Il2CppGenericContext
+{
+    const Il2CppGenericInst* class_inst;
+    const Il2CppGenericInst* method_inst;
+};
+
+struct Il2CppGenericClass
+{
+    Il2CppClass* typeDefinition;
+    Il2CppGenericContext context;
+};
+
 InspectedValue Il2CppValueInspector::InspectValue(
         const Il2CppType* type,
         const void* data)
@@ -620,10 +639,86 @@ InspectedValue Il2CppValueInspector::InspectValue(
             }
             else
             {
+                if (!g_il2cpp_class_get_fields ||
+                    !g_il2cpp_field_get_name ||
+                    !g_il2cpp_field_get_type ||
+                    !g_il2cpp_field_get_offset ||
+                    !g_il2cpp_field_get_flags)
+                {
+                    LOGI(
+                            "[INSPECTOR] ValueType field APIs unavailable: %s",
+                            result.typeName.c_str()
+                    );
+
+                    break;
+                }
+
                 LOGI(
-                        "[INSPECTOR] ValueType inspection not implemented: %s",
+                        "[INSPECTOR] ValueType Fields: %s",
                         result.typeName.c_str()
                 );
+
+                void* iterator = nullptr;
+
+                size_t index = 0;
+
+                while (true)
+                {
+                    FieldInfo* field =
+                            g_il2cpp_class_get_fields(
+                                    klass,
+                                    &iterator
+                            );
+
+                    if (!field)
+                        break;
+
+                    int32_t flags =
+                            g_il2cpp_field_get_flags(field);
+
+                    // FIELD_ATTRIBUTE_STATIC = 0x0010
+                    if ((flags & 0x0010) != 0)
+                    {
+                        ++index;
+                        continue;
+                    }
+
+                    const char* fieldName =
+                            g_il2cpp_field_get_name(field);
+
+                    const Il2CppType* fieldType =
+                            g_il2cpp_field_get_type(field);
+
+                    size_t offset =
+                            g_il2cpp_field_get_offset(field);
+
+                    LOGI(
+                            "[INSPECTOR] Field[%zu]: %s | type=%s | kind=%s | offset=%zu",
+                            index,
+                            fieldName ? fieldName : "<unknown>",
+                            GetTypeName(fieldType),
+                            GetTypeKindName(fieldType),
+                            offset
+                    );
+
+                    const uint8_t* fieldData =
+                            reinterpret_cast<const uint8_t*>(data) + offset;
+
+                    InspectedValue fieldValue =
+                            InspectValue(
+                                    fieldType,
+                                    fieldData
+                            );
+
+                    LOGI(
+                            "[INSPECTOR] Field[%zu] Value: %s = %s",
+                            index,
+                            fieldName ? fieldName : "<unknown>",
+                            fieldValue.displayValue.c_str()
+                    );
+
+                    ++index;
+                }
             }
 
             break;
@@ -648,7 +743,81 @@ InspectedValue Il2CppValueInspector::InspectValue(
 
             break;
         }
+        case IL2CPP_TYPE_GENERICINST:
+        {
+            result.klass =
+                    g_il2cpp_type_get_class_or_element_class
+                    ? g_il2cpp_type_get_class_or_element_class(type)
+                    : nullptr;
 
+            LOGI(
+                    "[INSPECTOR] GenericInstance: %s",
+                    result.typeName.c_str()
+            );
+
+            if (!type->data)
+            {
+                LOGI("[INSPECTOR] GenericInstance data = NULL");
+                break;
+            }
+
+            auto* genericClass =
+                    reinterpret_cast<const Il2CppGenericClass*>(type->data);
+
+            if (!genericClass)
+            {
+                LOGI("[INSPECTOR] GenericClass = NULL");
+                break;
+            }
+
+            const Il2CppGenericInst* inst =
+                    genericClass->context.class_inst;
+
+            if (!inst)
+            {
+                LOGI("[INSPECTOR] Generic class_inst = NULL");
+                break;
+            }
+
+            LOGI(
+                    "[INSPECTOR] Generic Args Count: %u",
+                    inst->type_argc
+            );
+
+            for (uint32_t i = 0; i < inst->type_argc; ++i)
+            {
+                const Il2CppType* argType =
+                        inst->type_argv[i];
+
+                if (!argType)
+                {
+                    LOGI(
+                            "[INSPECTOR] Generic Arg[%u]: NULL",
+                            i
+                    );
+                    continue;
+                }
+
+                const char* argName =
+                        g_il2cpp_type_get_name
+                        ? g_il2cpp_type_get_name(argType)
+                        : "<unknown>";
+
+                int argKind =
+                        g_il2cpp_type_get_type
+                        ? g_il2cpp_type_get_type(argType)
+                        : -1;
+
+                LOGI(
+                        "[INSPECTOR] Generic Arg[%u]: %s | kind=%d",
+                        i,
+                        argName ? argName : "<null>",
+                        argKind
+                );
+            }
+
+            break;
+        }
         default:
         {
             LOGI(

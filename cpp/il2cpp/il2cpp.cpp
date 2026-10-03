@@ -14,6 +14,8 @@ void* g_Il2CppHandle = nullptr;
 
 il2cpp_domain_get_t
         g_il2cpp_domain_get = nullptr;
+il2cpp_thread_attach_t
+        g_il2cpp_thread_attach = nullptr;
 
 il2cpp_domain_get_assemblies_t
         g_il2cpp_domain_get_assemblies = nullptr;
@@ -375,10 +377,26 @@ bool LoadIl2CppAPI()
 
     bool ok = true;
 
+
     ok &= ResolveIl2CppSymbol(
             g_il2cpp_domain_get,
             "il2cpp_domain_get"
     );
+    ok &= ResolveIl2CppSymbol(
+            g_il2cpp_thread_get_all_attached_threads,
+            "il2cpp_thread_get_all_attached_threads"
+    );
+
+    ok &= ResolveIl2CppSymbol(
+            g_il2cpp_thread_current,
+            "il2cpp_thread_current"
+    );
+
+    ok &= ResolveIl2CppSymbol(
+            g_il2cpp_thread_attach,
+            "il2cpp_thread_attach"
+    );
+
 
     ok &= ResolveIl2CppSymbol(
             g_il2cpp_domain_get_assemblies,
@@ -860,3 +878,10 @@ bool LoadIl2CppAPI()
 
     return true;
 }
+
+il2cpp_thread_get_all_attached_threads_t
+        g_il2cpp_thread_get_all_attached_threads = nullptr;
+
+il2cpp_thread_current_t
+        g_il2cpp_thread_current = nullptr;
+
