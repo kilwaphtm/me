@@ -10,6 +10,7 @@
 #include "imgui_impl_opengl3.h"
 #include "il2cpp/il2cpp.h"
 #include "il2cpp/resolver.h"
+#include "mywork.h"
 #define LOG_TAG "MY_CUSTOM_SO"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)

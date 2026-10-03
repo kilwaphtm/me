@@ -6,9 +6,13 @@
 #include <unordered_map>
 #include "shadowhook.h"
 #include "../il2cpp/resolver.h"
-
 #include <utility>
 #include "../il2cpp/value_inspector.h"
+#include <tuple>
+#include <functional>
+
+bool PostToMainThread(std::function<void()> callback);
+
 #define MYHOOK_LOG_TAG "MY_CUSTOM_SO"
 
 #define MYHOOK_LOGI(...) \
@@ -117,6 +121,20 @@ public:
 
     Return Execute(Args... args);
 
+    /*
+    =====================================================
+        Schedule
+
+        Schedules the original function to run on
+        the Unity Main Thread.
+
+        Example:
+
+        hook.Schedule(...)
+    =====================================================
+    */
+
+    bool Schedule(Args... args);
 
     /*
     =====================================================
@@ -321,6 +339,27 @@ private:
     static Return MonitorThunk(Args... args)
     {
         MyHook* hook = s_Instance;
+        if (hook->m_Data.isInstance)
+        {
+            auto argsTuple = std::forward_as_tuple(args...);
+
+            hook->m_LastResult.thisPtr =
+                    reinterpret_cast<void*>(
+                            std::get<0>(argsTuple)
+                    );
+
+            hook->m_LastResult.hasThis = true;
+
+            MYHOOK_LOGI(
+                    "[MYHOOK] THIS: %p",
+                    hook->m_LastResult.thisPtr
+            );
+        }
+        else
+        {
+            hook->m_LastResult.thisPtr = nullptr;
+            hook->m_LastResult.hasThis = false;
+        }
 
         if (!hook)
         {
@@ -416,6 +455,44 @@ private:
     }
 };
 
+template<typename Return, typename... Args>
+bool MyHook<Return (*)(Args...)>::Schedule(Args... args)
+{
+    if (!m_Data.address)
+    {
+        MYHOOK_LOGE(
+                "[MYHOOK] Schedule FAILED: method address is NULL"
+        );
+
+        return false;
+    }
+
+    auto arguments =
+            std::make_tuple(args...);
+
+    MyHook* hook = this;
+
+    return PostToMainThread(
+            [hook, arguments = std::move(arguments)]() mutable
+            {
+                MYHOOK_LOGI(
+                        "[MYHOOK] Scheduled callback"
+                );
+
+                std::apply(
+                        [hook](auto&&... values)
+                        {
+                            hook->Execute(
+                                    std::forward<decltype(values)>(
+                                            values
+                                    )...
+                            );
+                        },
+                        arguments
+                );
+            }
+    );
+}
 
 /*
 =========================================================
@@ -551,10 +628,10 @@ Return MyHook<Return (*)(Args...)>::Execute(
         Args... args
 )
 {
-    if (!m_Original)
+    if (!m_Data.address)
     {
         MYHOOK_LOGE(
-                "[MYHOOK] Execute FAILED: original is NULL"
+                "[MYHOOK] Execute FAILED: method address is NULL"
         );
 
         if constexpr (!std::is_void_v<Return>)
@@ -563,13 +640,40 @@ Return MyHook<Return (*)(Args...)>::Execute(
         return;
     }
 
+    MYHOOK_LOGI(
+            "[MYHOOK] Execute METHOD"
+    );
+    MYHOOK_LOGI(
+            "[MYHOOK] Execute METHODINFO=%p METHODPOINTER=%p ADDRESS=%p",
+            m_Data.method,
+            m_Data.method
+            ? m_Data.method->methodPointer
+            : nullptr,
+            m_Data.address
+    );
+    if (!m_Data.method || !m_Data.method->methodPointer)
+    {
+        MYHOOK_LOGE(
+                "[MYHOOK] Execute FAILED: methodPointer is NULL"
+        );
+
+        if constexpr (!std::is_void_v<Return>)
+            return Return{};
+
+        return;
+    }
+
+    auto method =
+            reinterpret_cast<Signature>(
+                    m_Data.method->methodPointer
+            );
 
     MYHOOK_LOGI(
-            "[MYHOOK] Execute ORIGINAL"
+            "[MYHOOK] Execute METHODPOINTER: %p",
+            m_Data.method->methodPointer
     );
 
-
-    return m_Original(
+    return method(
             args...
     );
 }
