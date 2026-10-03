@@ -5,10 +5,12 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <atomic>
+#include <thread>
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
+#include <chrono>
 #include "shadowhook.h"
 #include "imgui.h"
 #include "imgui_impl_opengl3.h"
@@ -606,6 +608,7 @@ struct Page
 // =========================================================
 // EMPTY PAGES
 // =========================================================
+
 static void DrawHome(float scale)
 {
     if (Components::Button(
@@ -615,27 +618,61 @@ static void DrawHome(float scale)
             scale
     ))
     {
-        TestResolverUsage();
-        TestResolverUsage2();
-    }
-    HookResult* result =
-            HookResultManager::Instance().Get(
-                    "BetStateController::get_CurrentBet"
-            );
+        LOGI("kkkkk[EXECUTE] TID = %d", gettid());
+        //Test_Schedule_SpinSlot();
+        Schedule_spinSlot();
+        std::thread([]()
+                    {
+                        std::this_thread::sleep_for(
+                                std::chrono::seconds(5)
+                        );
 
+                        Schedule_SetBetState(3);
+
+                    }).detach();
+        //GetSpinResultSymbolsAnalyticFormat();
+        //GetCurrentScreenName();
+        //spinSlot();
+        //TestGetInstance("SlotMachineManager");
+
+    }
+
+    static bool Bet_hookInitialized = false;
+    if (!Bet_hookInitialized)
+    {
+
+        //m_SetBetState();
+        //get_CurrentBet();
+        Bet_hookInitialized = true;
+    }
+    static std::string currentBet = "N/A";
+    static void* currentBetPtr = nullptr;
+    HookResult* result =HookResultManager::Instance().Get("BetStateController::get_CurrentBet");
     if (result)
     {
+        if (result->hasNewResult)
+        {
+            currentBet = result->returnValue.displayValue;
+            currentBetPtr = result->thisPtr;
+
+            result->hasNewResult = false;
+        }
+
         ImGui::Separator();
 
         ImGui::Text(
                 "CurrentBet: %s",
-                result->returnValue.displayValue.c_str()
+                currentBet.c_str()
         );
-        if(result->hasNewResult){
-            result->hasNewResult = false;
-        }
 
+        ImGui::Text(
+                "CurrentBet ptr: %p",
+                currentBetPtr
+        );
     }
+
+
+
 }
 static void DrawFeatures(float scale)
 {
