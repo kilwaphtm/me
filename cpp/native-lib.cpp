@@ -620,27 +620,28 @@ static void DrawHome(float scale)
     {
         LOGI("kkkkk[EXECUTE] TID = %d", gettid());
         //Test_Schedule_SpinSlot();
-        Schedule_spinSlot();
-        std::thread([]()
-                    {
-                        std::this_thread::sleep_for(
-                                std::chrono::seconds(5)
-                        );
-
-                        Schedule_SetBetState(3);
-
-                    }).detach();
+        //Schedule_spinSlot();
         //GetSpinResultSymbolsAnalyticFormat();
         //GetCurrentScreenName();
         //spinSlot();
         //TestGetInstance("SlotMachineManager");
+        static int switch_ = 0;
+        if (switch_ == 0)
+        {
+            Schedule_set_timeScale(10.0);
+            switch_ = 1;
+        } else{
+            Schedule_set_timeScale(1.0);
+            switch_ = 0;
+        }
+
 
     }
 
     static bool Bet_hookInitialized = false;
     if (!Bet_hookInitialized)
     {
-
+        monitor_set_timeScale(1);
         //m_SetBetState();
         //get_CurrentBet();
         Bet_hookInitialized = true;
