@@ -249,6 +249,14 @@ private:
         State
     =====================================================
     */
+    enum class HookType
+    {
+        None,
+        Monitor,
+        Replace
+    };
+
+    HookType m_HookType = HookType::None;
 
     bool m_IsHooked = false;
 
@@ -343,17 +351,35 @@ private:
         {
             auto argsTuple = std::forward_as_tuple(args...);
 
-            hook->m_LastResult.thisPtr =
-                    reinterpret_cast<void*>(
-                            std::get<0>(argsTuple)
-                    );
+            using FirstArg =
+                    std::tuple_element_t<
+                            0,
+                            std::tuple<Args...>
+                    >;
 
-            hook->m_LastResult.hasThis = true;
+            if constexpr (std::is_pointer_v<FirstArg>)
+            {
+                hook->m_LastResult.thisPtr =
+                        reinterpret_cast<void*>(
+                                std::get<0>(argsTuple)
+                        );
 
-            MYHOOK_LOGI(
-                    "[MYHOOK] THIS: %p",
-                    hook->m_LastResult.thisPtr
-            );
+                hook->m_LastResult.hasThis = true;
+
+                MYHOOK_LOGI(
+                        "[MYHOOK] THIS: %p",
+                        hook->m_LastResult.thisPtr
+                );
+            }
+            else
+            {
+                hook->m_LastResult.thisPtr = nullptr;
+                hook->m_LastResult.hasThis = false;
+
+                MYHOOK_LOGE(
+                        "[MYHOOK] ERROR: Instance method has non-pointer first argument"
+                );
+            }
         }
         else
         {
@@ -449,6 +475,70 @@ private:
                         );
                 hook->m_LastResult.hasNewResult = true;
             }
+
+            return result;
+        }
+    }
+
+    static Return ReplacementThunk(Args... args)
+    {
+        MyHook* hook = s_Instance;
+
+        if (!hook)
+        {
+            MYHOOK_LOGE(
+                    "[MYHOOK] ReplacementThunk: instance is NULL"
+            );
+
+            if constexpr (std::is_void_v<Return>)
+            {
+                return;
+            }
+            else
+            {
+                return Return{};
+            }
+        }
+
+        if (!hook->m_Replacement)
+        {
+            MYHOOK_LOGE(
+                    "[MYHOOK] ReplacementThunk: replacement is NULL"
+            );
+
+            if constexpr (std::is_void_v<Return>)
+            {
+                return;
+            }
+            else
+            {
+                return Return{};
+            }
+        }
+
+        MYHOOK_LOGI(
+                "[MYHOOK] REPLACEMENT CALLED: %p",
+                hook->m_Data.address
+        );
+
+        if constexpr (std::is_void_v<Return>)
+        {
+            hook->m_Replacement(args...);
+
+            MYHOOK_LOGI(
+                    "[MYHOOK] REPLACEMENT RETURNED: void"
+            );
+
+            return;
+        }
+        else
+        {
+            Return result = hook->m_Replacement(args...);
+
+            MYHOOK_LOGI(
+                    "[MYHOOK] REPLACEMENT RETURNED: %d",
+                    result
+            );
 
             return result;
         }
@@ -699,7 +789,6 @@ bool MyHook<Return (*)(Args...)>::Replace(
         return false;
     }
 
-
     if (!replacement)
     {
         MYHOOK_LOGE(
@@ -709,46 +798,45 @@ bool MyHook<Return (*)(Args...)>::Replace(
         return false;
     }
 
-
-    /*
-    =====================================================
-        Make sure hook exists first
-    =====================================================
-    */
-
-    if (!m_IsHooked)
-    {
-        MYHOOK_LOGI(
-                "[MYHOOK] Replace: hook not installed, "
-                "installing Monitor first"
-        );
-
-        if (!Monitor())
-        {
-            MYHOOK_LOGE(
-                    "[MYHOOK] Replace FAILED: Monitor failed"
-            );
-
-            return false;
-        }
-    }
-
-
     /*
     =====================================================
         Save replacement
-
-        MonitorThunk() will automatically call it.
     =====================================================
     */
 
     m_Replacement = replacement;
 
+    /*
+    =====================================================
+        Install direct replacement hook
+    =====================================================
+    */
+
+    void* stub = shadowhook_hook_func_addr(
+            m_Data.address,
+            reinterpret_cast<void*>(&ReplacementThunk),
+            reinterpret_cast<void**>(&m_Original)
+    );
+
+    if (!stub)
+    {
+        MYHOOK_LOGE(
+                "[MYHOOK] Replace FAILED: shadowhook_hook_func_addr"
+        );
+
+        m_Replacement = nullptr;
+
+        return false;
+    }
+
+    m_Stub = stub;
+    m_IsHooked = true;
+    m_HookType = HookType::Replace;
+    s_Instance = this;
 
     MYHOOK_LOGI(
             "[MYHOOK] Replace SUCCESS"
     );
-
 
     return true;
 }
@@ -824,7 +912,7 @@ bool MyHook<Return (*)(Args...)>::Remove()
     m_Replacement = nullptr;
 
     m_IsHooked = false;
-
+    m_HookType = HookType::None;
 
     if (s_Instance == this)
         s_Instance = nullptr;

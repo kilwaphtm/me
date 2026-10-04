@@ -418,360 +418,6 @@ Il2CppObject* TestGetInstance(const char* className)
 
     return instance;
 }
-struct BetStateController_o;
-struct SlotMachineManager_o;
-void get_CurrentBet()
-{
-    MethodInfoData data;
-
-    if (!ResolveMethod(
-            "BetStateController",
-            "get_CurrentBet",
-            data,
-            true))
-    {
-        LOGI("[MYWORK] ResolveMethod FAILED");
-        return;
-    }
-
-    LOGI("[MYWORK] ResolveMethod SUCCESS");
-    LOGI(
-            "[INSPECTOR] Return Type: %s | Kind: %s",
-            Il2CppValueInspector::GetTypeName(data.returnType),
-            Il2CppValueInspector::GetTypeKindName(data.returnType)
-    );
-
-    for (uint32_t i = 0; i < data.parameterCount; ++i)
-    {
-        const char* name =
-                (i < data.parameterNames.size() && data.parameterNames[i])
-                ? data.parameterNames[i]
-                : "<unnamed>";
-
-        const Il2CppType* type =
-                (i < data.parameterTypes.size())
-                ? data.parameterTypes[i]
-                : nullptr;
-
-        LOGI(
-                "[INSPECTOR] Param[%u]: name=%s type=%s kind=%s",
-                i,
-                name,
-                Il2CppValueInspector::GetTypeName(type),
-                Il2CppValueInspector::GetTypeKindName(type)
-        );
-    }
-
-    using GetCurrentBet_t =
-            int32_t (*)(
-                    BetStateController_o*,
-                    const MethodInfo*
-            );
-
-    static MyHook<GetCurrentBet_t> hook(data);
-
-    if (hook.Monitor())
-    {
-        LOGI("[MYWORK2] Monitor SUCCESS");
-
-        HookResult* result =
-                HookResultManager::Instance().Get(
-                        data.resultKey
-                );
-
-        if (result)
-        {
-            LOGI(
-                    "[RESULT MANAGER] FOUND: %s | Result=%p",
-                    data.resultKey.c_str(),
-                    result
-            );
-        }
-        else
-        {
-            LOGI(
-                    "[RESULT MANAGER] NOT FOUND: %s",
-                    data.resultKey.c_str()
-            );
-        }
-    }
-    else
-    {
-        LOGI("[MYWORK] Monitor FAILED");
-    }
-}
-void m_SetBetState()
-{
-    MethodInfoData data;
-
-    if (!ResolveMethod(
-            "SlotMachineManager",
-            "SetBetState",
-            data,
-            true))
-    {
-        LOGI("[MYWORK] ResolveMethod FAILED");
-        return;
-    }
-
-    LOGI("[MYWORK] ResolveMethod SUCCESS");
-    LOGI(
-            "[INSPECTOR] Return Type: %s | Kind: %s",
-            Il2CppValueInspector::GetTypeName(data.returnType),
-            Il2CppValueInspector::GetTypeKindName(data.returnType)
-    );
-
-    for (uint32_t i = 0; i < data.parameterCount; ++i)
-    {
-        const char* name =
-                (i < data.parameterNames.size() && data.parameterNames[i])
-                ? data.parameterNames[i]
-                : "<unnamed>";
-
-        const Il2CppType* type =
-                (i < data.parameterTypes.size())
-                ? data.parameterTypes[i]
-                : nullptr;
-
-        LOGI(
-                "[INSPECTOR] Param[%u]: name=%s type=%s kind=%s",
-                i,
-                name,
-                Il2CppValueInspector::GetTypeName(type),
-                Il2CppValueInspector::GetTypeKindName(type)
-        );
-    }
-
-    using SetBetState_t =
-            void (*)(
-                    SlotMachineManager_o*,
-                    int32_t,
-                    const MethodInfo*
-            );
-
-    static MyHook<SetBetState_t> hook(data);
-
-    if (hook.Monitor())
-    {
-        LOGI("[MYWORK2] Monitor SUCCESS");
-
-        HookResult* result =
-                HookResultManager::Instance().Get(
-                        data.resultKey
-                );
-
-        if (result)
-        {
-            LOGI(
-                    "[RESULT MANAGER] FOUND: %s | Result=%p",
-                    data.resultKey.c_str(),
-                    result
-            );
-        }
-        else
-        {
-            LOGI(
-                    "[RESULT MANAGER] NOT FOUND: %s",
-                    data.resultKey.c_str()
-            );
-        }
-    }
-    else
-    {
-        LOGI("[MYWORK] Monitor FAILED");
-    }
-}
-void GetSpinResultSymbolsAnalyticFormat()
-{
-    MethodInfoData data;
-
-    if (!ResolveMethod(
-            "SlotMachineManager",
-            "GetSpinResultSymbolsAnalyticFormat",
-            data,
-            true))
-    {
-        LOGI("[MYWORK2] ResolveMethod FAILED");
-        return;
-    }
-
-    LOGI("[MYWORK2] ResolveMethod SUCCESS");
-
-    LOGI(
-            "[INSPECTOR] Return Type: %s | Kind: %s",
-            Il2CppValueInspector::GetTypeName(data.returnType),
-            Il2CppValueInspector::GetTypeKindName(data.returnType)
-    );
-
-    for (uint32_t i = 0; i < data.parameterCount; ++i)
-    {
-        const char* name =
-                (i < data.parameterNames.size() && data.parameterNames[i])
-                ? data.parameterNames[i]
-                : "<unnamed>";
-
-        const Il2CppType* type =
-                (i < data.parameterTypes.size())
-                ? data.parameterTypes[i]
-                : nullptr;
-
-        LOGI(
-                "[INSPECTOR] Param[%u]: name=%s type=%s kind=%s",
-                i,
-                name,
-                Il2CppValueInspector::GetTypeName(type),
-                Il2CppValueInspector::GetTypeKindName(type)
-        );
-    }
-    if (data.parameterCount > 0)
-    {
-        LOGI("[MYWORK2] Inspecting Param[0] class...");
-
-        Il2CppValueInspector::InspectClass(
-                data.parameterTypes[0]
-        );
-        int32_t testEnumValue = 5;
-
-        Il2CppValueInspector::InspectEnumValue(
-                data.parameterTypes[0],
-                &testEnumValue
-        );
-    }
-    using GetSpinResultSymbolsAnalyticFormat_t =
-            void* (*)(
-                    SlotMachineManager_o*,
-                    int32_t,
-                    int32_t,
-                    int32_t,
-                    const MethodInfo*
-            );
-
-    static MyHook<GetSpinResultSymbolsAnalyticFormat_t> hook(data);
-
-    if (hook.Monitor())
-    {
-        LOGI("[MYWORK2] Monitor SUCCESS");
-        HookResult* result =
-                HookResultManager::Instance().Get(
-                        data.resultKey
-                );
-
-        if (result)
-        {
-            LOGI(
-                    "[RESULT MANAGER] FOUND: %s | Result=%p",
-                    data.resultKey.c_str(),
-                    result
-            );
-        }
-        else
-        {
-            LOGI(
-                    "[RESULT MANAGER] NOT FOUND: %s",
-                    data.resultKey.c_str()
-            );
-        }
-    }
-    else
-    {
-        LOGI("[MYWORK2] Monitor FAILED");
-    }
-}
-void spinSlot()
-{
-    MethodInfoData data;
-
-    if (!ResolveMethod(
-            "SlotMachineManager",
-            "spinSlot",
-            data,
-            true))
-    {
-        LOGI("[MYWORK2] ResolveMethod FAILED");
-        return;
-    }
-
-    LOGI("[MYWORK2] ResolveMethod SUCCESS");
-
-    LOGI(
-            "[INSPECTOR] Return Type: %s | Kind: %s",
-            Il2CppValueInspector::GetTypeName(data.returnType),
-            Il2CppValueInspector::GetTypeKindName(data.returnType)
-    );
-
-    for (uint32_t i = 0; i < data.parameterCount; ++i)
-    {
-        const char* name =
-                (i < data.parameterNames.size() && data.parameterNames[i])
-                ? data.parameterNames[i]
-                : "<unnamed>";
-
-        const Il2CppType* type =
-                (i < data.parameterTypes.size())
-                ? data.parameterTypes[i]
-                : nullptr;
-
-        LOGI(
-                "[INSPECTOR] Param[%u]: name=%s type=%s kind=%s",
-                i,
-                name,
-                Il2CppValueInspector::GetTypeName(type),
-                Il2CppValueInspector::GetTypeKindName(type)
-        );
-    }
-    if (data.parameterCount > 0)
-    {
-        LOGI("[MYWORK2] Inspecting Param[0] class...");
-
-        Il2CppValueInspector::InspectClass(
-                data.parameterTypes[0]
-        );
-        int32_t testEnumValue = 5;
-
-        Il2CppValueInspector::InspectEnumValue(
-                data.parameterTypes[0],
-                &testEnumValue
-        );
-    }
-    using spinSlot_t =
-            void* (*)(
-                    SlotMachineManager_o*,
-                    const MethodInfo*
-            );
-
-    static MyHook<spinSlot_t> hook(data);
-
-    if (hook.Monitor())
-    {
-        LOGI("[MYWORK2] Monitor SUCCESS");
-        HookResult* result =
-                HookResultManager::Instance().Get(
-                        data.resultKey
-                );
-
-        if (result)
-        {
-            LOGI(
-                    "[RESULT MANAGER] FOUND: %s | Result=%p",
-                    data.resultKey.c_str(),
-                    result
-            );
-        }
-        else
-        {
-            LOGI(
-                    "[RESULT MANAGER] NOT FOUND: %s",
-                    data.resultKey.c_str()
-            );
-        }
-    }
-    else
-    {
-        LOGI("[MYWORK2] Monitor FAILED");
-    }
-}
-
-
 Il2CppObject* GetMainThreadSynchronizationContext()
 {
     if (!g_il2cpp_thread_get_all_attached_threads)
@@ -944,6 +590,348 @@ Il2CppObject* GetMainThreadSynchronizationContext()
 
     return syncContext;
 }
+struct BetStateController_o;
+struct SlotMachineManager_o;
+struct MoonActive_Raid_RaidAnimationFlowHandler_o;
+
+// -----------------------------------------------
+
+// to monitor >> 1 to active 0 to remove
+void get_CurrentBet(int action)
+{
+    using GetCurrentBet_t =
+            int32_t (*)(
+                    BetStateController_o*,
+                    const MethodInfo*
+            );
+
+    static MyHook<GetCurrentBet_t>* hook = nullptr;
+
+    if (action == 1)
+    {
+        MethodInfoData data;
+
+        if (!ResolveMethod(
+                "BetStateController",
+                "get_CurrentBet",
+                data,
+                true))
+        {
+            LOGI("[MYWORK] ResolveMethod FAILED");
+            return;
+        }
+
+        LOGI("[MYWORK] ResolveMethod SUCCESS");
+
+        hook = new MyHook<GetCurrentBet_t>(data);
+
+        if (hook->Monitor())
+        {
+            LOGI("[MYWORK] Monitor SUCCESS");
+        }
+        else
+        {
+            LOGI("[MYWORK] Monitor FAILED");
+
+            delete hook;
+            hook = nullptr;
+        }
+    }
+    else if (action == 0)
+    {
+        if (!hook)
+        {
+            LOGI("[MYWORK] Remove: hook is NULL");
+            return;
+        }
+
+        if (hook->Remove())
+        {
+            LOGI("[MYWORK] Remove SUCCESS");
+
+            delete hook;
+            hook = nullptr;
+        }
+        else
+        {
+            LOGI("[MYWORK] Remove FAILED");
+        }
+    }
+}
+//=============================
+void monitor_set_timeScale(int action)
+{
+    using m_set_timeScale_t =
+            void (*)(
+                    float,
+                    const MethodInfo*
+            );
+
+    static MyHook<m_set_timeScale_t>* hook = nullptr;
+
+    //signedValue
+    //unsignedValue
+    //floatValue
+    //doubleValue
+    //stringValue
+    //pointerValue
+    //displayValue
+
+
+    if (action == 1)
+    {
+        MethodInfoData data;
+
+        if (!ResolveMethod(
+                "Time",
+                "set_timeScale",
+                data,
+                true))
+        {
+            LOGI("[MYWORK] ResolveMethod FAILED");
+            return;
+        }
+
+        LOGI("[MYWORK] ResolveMethod SUCCESS");
+
+        hook = new MyHook<m_set_timeScale_t>(data);
+
+        if (hook->Monitor())
+        {
+            LOGI("[MYWORK] Monitor SUCCESS");
+        }
+        else
+        {
+            LOGI("[MYWORK] Monitor FAILED");
+
+            delete hook;
+            hook = nullptr;
+        }
+    }
+    else if (action == 0)
+    {
+        if (!hook)
+        {
+            LOGI("[MYWORK] Remove: hook is NULL");
+            return;
+        }
+
+        if (hook->Remove())
+        {
+            LOGI("[MYWORK] Remove SUCCESS");
+
+            delete hook;
+            hook = nullptr;
+        }
+        else
+        {
+            LOGI("[MYWORK] Remove FAILED");
+        }
+    }
+}
+
+// -------------------------------------------------
+
+
+// to replace 1 to active 0 to remove
+// int32_t  >> int
+// void  >> void
+int32_t MyReplacement(
+        BetStateController_o* self,
+        const MethodInfo* method)
+{
+    LOGI("[MYWORK] MyReplacement CALLED");
+
+    return 15;
+}
+void Replace_get_CurrentBet(int action)
+{
+    using GetCurrentBet_t =
+            int32_t (*)(
+                    BetStateController_o*,
+                    const MethodInfo*
+            );
+
+    static MyHook<GetCurrentBet_t>* hook = nullptr;
+
+    if (action == 1)
+    {
+        MethodInfoData data;
+
+        if (!ResolveMethod(
+                "BetStateController",
+                "get_CurrentBet",
+                data,
+                true))
+        {
+            LOGI("[MYWORK] ResolveMethod FAILED");
+            return;
+        }
+
+        LOGI("[MYWORK] ResolveMethod SUCCESS");
+
+        LOGI(
+                "[INSPECTOR] Return Type: %s | Kind: %s",
+                Il2CppValueInspector::GetTypeName(data.returnType),
+                Il2CppValueInspector::GetTypeKindName(data.returnType)
+        );
+
+        for (uint32_t i = 0; i < data.parameterCount; ++i)
+        {
+            const char* name =
+                    (i < data.parameterNames.size() &&
+                     data.parameterNames[i])
+                    ? data.parameterNames[i]
+                    : "<unnamed>";
+
+            const Il2CppType* type =
+                    (i < data.parameterTypes.size())
+                    ? data.parameterTypes[i]
+                    : nullptr;
+
+            LOGI(
+                    "[INSPECTOR] Param[%u]: name=%s type=%s kind=%s",
+                    i,
+                    name,
+                    Il2CppValueInspector::GetTypeName(type),
+                    Il2CppValueInspector::GetTypeKindName(type)
+            );
+        }
+
+        hook = new MyHook<GetCurrentBet_t>(data);
+
+        if (hook->Replace(MyReplacement))
+        {
+            LOGI("[MYWORK] Replace SUCCESS");
+        }
+        else
+        {
+            LOGI("[MYWORK] Replace FAILED");
+
+            delete hook;
+            hook = nullptr;
+        }
+    }
+    else if (action == 0)
+    {
+        if (!hook)
+        {
+            LOGI("[MYWORK] Remove: hook is NULL");
+            return;
+        }
+
+        if (hook->Remove())
+        {
+            LOGI("[MYWORK] Remove SUCCESS");
+
+            delete hook;
+            hook = nullptr;
+        }
+        else
+        {
+            LOGI("[MYWORK] Remove FAILED");
+        }
+    }
+}
+// ==========================
+void MyReplacement_spinSlot(
+        SlotMachineManager_o*,
+        const MethodInfo*)
+{
+    LOGI("[MYWORK] MyReplacement CALLED");
+}
+void Replace_spinSlot(int action)
+{
+    using Replace_spinSlot_t =
+            void (*)(
+                    SlotMachineManager_o*,
+                    const MethodInfo*
+            );
+
+    static MyHook<Replace_spinSlot_t>* hook = nullptr;
+
+    if (action == 1)
+    {
+        MethodInfoData data;
+
+        if (!ResolveMethod(
+                "SlotMachineManager",
+                "spinSlot",
+                data,
+                true))
+        {
+            LOGI("[MYWORK] ResolveMethod FAILED");
+            return;
+        }
+
+        LOGI("[MYWORK] ResolveMethod SUCCESS");
+
+        LOGI(
+                "[INSPECTOR] Return Type: %s | Kind: %s",
+                Il2CppValueInspector::GetTypeName(data.returnType),
+                Il2CppValueInspector::GetTypeKindName(data.returnType)
+        );
+
+        for (uint32_t i = 0; i < data.parameterCount; ++i)
+        {
+            const char* name =
+                    (i < data.parameterNames.size() &&
+                     data.parameterNames[i])
+                    ? data.parameterNames[i]
+                    : "<unnamed>";
+
+            const Il2CppType* type =
+                    (i < data.parameterTypes.size())
+                    ? data.parameterTypes[i]
+                    : nullptr;
+
+            LOGI(
+                    "[INSPECTOR] Param[%u]: name=%s type=%s kind=%s",
+                    i,
+                    name,
+                    Il2CppValueInspector::GetTypeName(type),
+                    Il2CppValueInspector::GetTypeKindName(type)
+            );
+        }
+
+        hook = new MyHook<Replace_spinSlot_t>(data);
+
+        if (hook->Replace(MyReplacement_spinSlot))
+        {
+            LOGI("[MYWORK] Replace SUCCESS");
+        }
+        else
+        {
+            LOGI("[MYWORK] Replace FAILED");
+
+            delete hook;
+            hook = nullptr;
+        }
+    }
+    else if (action == 0)
+    {
+        if (!hook)
+        {
+            LOGI("[MYWORK] Remove: hook is NULL");
+            return;
+        }
+
+        if (hook->Remove())
+        {
+            LOGI("[MYWORK] Remove SUCCESS");
+
+            delete hook;
+            hook = nullptr;
+        }
+        else
+        {
+            LOGI("[MYWORK] Remove FAILED");
+        }
+    }
+}
+// ==========================
+
+// -------------------------------------------------
 
 // To Test Schedule
 void Test_Schedule_SpinSlot()
@@ -1015,8 +1003,7 @@ void Test_Schedule_SpinSlot()
             }
     );
 }
-
-
+// to execute method via schedule
 void Schedule_spinSlot()
 {
     MethodInfoData data;
@@ -1108,6 +1095,41 @@ void Schedule_SetBetState(int bet)
     );
 
     bool result = hook.Schedule(thisPtr,bet,nullptr);
+
+    LOGI(
+            "[MYHOOK] Schedule returned: %s",
+            result ? "TRUE" : "FALSE"
+    );
+}
+// ==========================
+// to execute method via schedule (static)
+void Schedule_set_timeScale(float speed)
+{
+    MethodInfoData data;
+
+    if (!ResolveMethod(
+            "Time",
+            "set_timeScale",
+            data,
+            true))
+    {
+        LOGI("[MYHOOK] set_timeScale resolve FAILED");
+        return;
+    }
+
+    using set_timeScale_t =
+            void (*)(
+                    float,
+                    const MethodInfo*
+            );
+
+    static MyHook<set_timeScale_t> hook(data);
+
+    bool result =
+            hook.Schedule(
+                    speed,
+                    nullptr
+            );
 
     LOGI(
             "[MYHOOK] Schedule returned: %s",

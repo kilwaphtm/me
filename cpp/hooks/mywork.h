@@ -7,11 +7,8 @@ bool PostToMainThread(std::function<void()> callback);
 Il2CppObject* GetMainThreadSynchronizationContext();
 Il2CppObject* TestGetInstance(const char* className);
 
-void Test_Schedule_SpinSlot();
-void Schedule_spinSlot();
-void Schedule_SetBetState(int bet);
-void get_CurrentBet();
-void GetSpinResultSymbolsAnalyticFormat();
-void spinSlot();
-void m_SetBetState();
 
+void get_CurrentBet(int action);
+void Replace_spinSlot(int action);
+void monitor_set_timeScale(int action);
+void Schedule_set_timeScale(float speed);
